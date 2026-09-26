@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "footage": "node scripts/footage.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

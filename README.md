@@ -31,11 +31,26 @@ Contact form → `submitEnquiry` server action → validation, honeypot, optiona
 email with Reply-To set to the client, and the client gets a short auto-reply. In `/admin`, change a lead's
 status to quoted, won or lost, and filter by status.
 
+## Updating the footage
+
+The clips and stills on the site were rebuilt from the old site's 720p copies. To make them sharper, put the
+original graded masters in `footage/originals/` (gitignored), named after each clip in `lib/work.ts`
+(`plant-chimneys.mov`, `night-highway.mp4`, ...) and the hero as `hero.<ext>`, then:
+
+    npm run footage -- --dry    # check the names and what it will write
+    npm run footage
+
+It encodes each clip at up to 1080p (`--height 1440` for more), re-cuts every still from the frame that matches
+the current one so the framing stays the same, and rebuilds the hero and its poster. Needs ffmpeg on PATH. Masters
+must be graded: HDR is tone-mapped, but a flat log profile would come out washed out. Upload the new clips to the
+CDN afterwards.
+
 ## Scripts
 
 - `npm run dev`: development server
 - `npm run build` / `npm start`: production build
 - `npm run lint`, `npm run typecheck`, `npm test`: checks
+- `npm run footage`: rebuild clips and stills from the masters (see above)
 
 ## Still to fill in
 

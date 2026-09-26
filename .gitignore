@@ -47,3 +47,6 @@ next-env.d.ts
 # reel clips pulled from the old site: served locally, hosted on a CDN in production
 # (NEXT_PUBLIC_CLIPS_BASE_URL). Never commit these; see the note in CLAUDE.md.
 /public/media/clips/
+
+# original masters for scripts/footage.mjs: large, and not ours to publish as-is
+/footage/

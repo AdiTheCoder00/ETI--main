@@ -55,6 +55,16 @@ Site
   button is click-only on purpose — on `focus` it started every clip in turn while tabbing. Under
   reduced motion hover does nothing and only the button plays. The homepage reel shows every flight too and
   links here; it is no longer a teaser, so there is no "ask for the full reel" CTA.
+- **Case pages** (`app/work/[slug]/page.tsx`, Sept 2026): one static page per flight, slugs from `lib/work.ts`
+  (keep them stable once live: they are what gets indexed). Clip (`components/CaseClip.tsx`: plays muted
+  while on screen, pauses off screen, never autoplays under reduced motion), location, type of work, kit,
+  note, and a "Result" block that only appears when the owner has given one via `result` — never write one.
+  Title, description, canonical and share image come from the same fields. Unknown slugs 404
+  (`dynamicParams = false`). Every title on `/work` and the homepage reel links to its page (the whole card
+  is the link; the play button sits above it). `app/sitemap.ts` and `app/robots.ts` use `NEXT_PUBLIC_SITE_URL`.
+- `components/PageScroll.tsx` reveals by attribute on loader-less pages: `data-lift` on a heading, `data-wipe`
+  on a block. Reveal ends are `clamp()`ed to the scroll range (`lib/motion/reveal.ts`): without that, a
+  heading near the foot of a page never reached its end marker and stayed half risen.
 - Fonts come from `next/font/google` (Archivo with the `wdth` axis, Source Serif 4 with `opsz`), self-hosted.
 
 Enquiry backend (`lib/leads/`, `app/actions.ts`)
@@ -113,8 +123,7 @@ The old site's phone numbers (98200 12345 etc.) looked fake and were deliberatel
 
 ## Next: planned work
 1. ~~Enquiry backend and lead inbox~~ (done).
-2. **Case study pages.** The filtered gallery at `/work` is done; what's left is a page per project
-   (`/work/[slug]`) with the clip, location, kit and the result. The main SEO win. Start from `lib/work.ts`.
+2. ~~Case study pages~~ (done; the results still need the owner's words, see `result` in `lib/work.ts`).
 3. **Quote estimator.** Service + city + days gives a rough price range and creates a lead (reuse
    `handleEnquiry`/the lead store with `source: "quote_estimator"`). Pricing comes from the owner; never invent numbers.
 4. **Map of flown locations.** 16 locations from the old site's project data (Varanasi, Gujarat, BKC Mumbai,

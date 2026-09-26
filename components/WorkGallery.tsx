@@ -4,6 +4,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { CATEGORIES, clipUrl, work, type Shot } from "@/lib/work";
 import { wipe } from "@/lib/motion/reveal";
@@ -135,7 +136,11 @@ function Card({ shot, reduce }: { shot: Shot; reduce: boolean }) {
         )}
       </div>
       <div className="gal-meta">
-        <h2>{shot.title}</h2>
+        <h2>
+          <Link href={`/work/${shot.slug}`} className="card-link">
+            {shot.title}
+          </Link>
+        </h2>
         <span className="loc">{shot.location}</span>
       </div>
       <p className="gal-kit">

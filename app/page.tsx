@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { preload } from "react-dom";
 import { ContactForm } from "@/components/ContactForm";
+import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 import { SiteMotion } from "@/components/SiteMotion";
 import { clipUrl, shots } from "@/lib/work";
@@ -119,7 +120,11 @@ export default function Home() {
                   </div>
                   <figcaption>
                     <div className="shot-meta">
-                      <h3>{s.title}</h3>
+                      <h3>
+                        <Link href={`/work/${s.slug}`} className="card-link">
+                          {s.title}
+                        </Link>
+                      </h3>
                       <span className="loc">{s.location}</span>
                     </div>
                     {s.note && <p>{s.note}</p>}
@@ -263,20 +268,7 @@ export default function Home() {
         </section>
 
         <div className="wrap">
-          <footer className="foot">
-            <span>© 2026 ETI Drone Visuals, Mumbai</span>
-            <nav aria-label="Social">
-              <a href="https://instagram.com" target="_blank" rel="noopener">
-                Instagram
-              </a>
-              <a href="https://youtube.com" target="_blank" rel="noopener">
-                YouTube
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener">
-                LinkedIn
-              </a>
-            </nav>
-          </footer>
+          <Footer />
         </div>
       </main>
     </>

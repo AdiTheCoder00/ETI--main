@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 import { PageScroll } from "@/components/PageScroll";
 import { WorkGallery } from "@/components/WorkGallery";
@@ -17,10 +18,10 @@ export default function WorkPage() {
       <Nav />
       <main className="wrap gal-page">
         <header className="gal-head">
-          <h1 className="display h2" id="work-h">
+          <h1 className="display h2" id="work-h" data-lift>
             Work
           </h1>
-          <p>
+          <p data-wipe>
             Every flight we can show, with the footage. Hover or tap a frame to play it. For anything under NDA, ask and
             we’ll screen it.
           </p>
@@ -29,7 +30,7 @@ export default function WorkPage() {
         <WorkGallery />
 
         <div className="gal-ask">
-          <h2 className="display h2" id="ask-h">
+          <h2 className="display h2" id="ask-h" data-lift>
             Something like this?
           </h2>
           <Link href="/?intro=skip#contact" className="btn btn-accent">
@@ -37,20 +38,7 @@ export default function WorkPage() {
           </Link>
         </div>
 
-        <footer className="foot">
-          <span>© 2026 ETI Drone Visuals, Mumbai</span>
-          <nav aria-label="Social">
-            <a href="https://instagram.com" target="_blank" rel="noopener">
-              Instagram
-            </a>
-            <a href="https://youtube.com" target="_blank" rel="noopener">
-              YouTube
-            </a>
-            <a href="https://linkedin.com" target="_blank" rel="noopener">
-              LinkedIn
-            </a>
-          </nav>
-        </footer>
+        <Footer />
       </main>
     </>
   );

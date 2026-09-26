@@ -19,6 +19,8 @@ export const CATEGORIES = ["Industrial", "Urban and transit", "Scenic and herita
 export type Category = (typeof CATEGORIES)[number];
 
 export type Shot = {
+  /** URL of its case page, /work/[slug]. Keep stable once published: it is what search engines index. */
+  slug: string;
   title: string;
   location: string;
   category: Category;
@@ -31,6 +33,11 @@ export type Shot = {
   /** Wide frames take more of the horizontal reel. */
   wide?: boolean;
   note?: string;
+  /**
+   * What the client got out of it, for the case page. Only from the owner: leave it out rather than
+   * write one. (The chimney audit's result line is still an open placeholder in CLAUDE.md.)
+   */
+  result?: string;
   /** Position in the homepage reel; left out for the ones that only appear on /work. */
   reel?: number;
 };
@@ -41,6 +48,7 @@ export function clipUrl(file: string) {
 
 export const work: Shot[] = [
   {
+    slug: "chimney-stack-audit",
     title: "Chimney stack audit",
     location: "Power station, Madhya Pradesh",
     category: "Industrial",
@@ -53,6 +61,7 @@ export const work: Shot[] = [
     reel: 1,
   },
   {
+    slug: "metro-viaduct-tracking",
     title: "Metro viaduct tracking",
     location: "Bengaluru",
     category: "Urban and transit",
@@ -63,6 +72,7 @@ export const work: Shot[] = [
     reel: 2,
   },
   {
+    slug: "hill-temple",
     title: "Hill temple",
     location: "Western Ghats",
     category: "Scenic and heritage",
@@ -74,6 +84,7 @@ export const work: Shot[] = [
     reel: 3,
   },
   {
+    slug: "conveyor-line-survey",
     title: "Conveyor line survey",
     location: "Mineral processing unit",
     category: "Industrial",
@@ -85,6 +96,7 @@ export const work: Shot[] = [
     reel: 4,
   },
   {
+    slug: "rail-yard-mapping",
     title: "Rail yard mapping",
     location: "Northern Railway hub",
     category: "Urban and transit",
@@ -95,6 +107,7 @@ export const work: Shot[] = [
     reel: 5,
   },
   {
+    slug: "wetland-sanctuary",
     title: "Wetland sanctuary",
     location: "Chilika Lagoon",
     category: "Scenic and heritage",
@@ -105,6 +118,7 @@ export const work: Shot[] = [
     reel: 6,
   },
   {
+    slug: "terminal-orbit",
     title: "Terminal orbit",
     location: "Nagpur",
     category: "Urban and transit",
@@ -116,6 +130,7 @@ export const work: Shot[] = [
     reel: 7,
   },
   {
+    slug: "tower-progress-survey",
     title: "Tower progress survey",
     location: "BKC, Mumbai",
     category: "Construction",
@@ -126,6 +141,7 @@ export const work: Shot[] = [
     reel: 8,
   },
   {
+    slug: "fpv-flythrough",
     title: "FPV flythrough",
     location: "Steel complex, Gujarat",
     category: "Industrial",
@@ -136,6 +152,7 @@ export const work: Shot[] = [
     reel: 9,
   },
   {
+    slug: "structural-steelwork-survey",
     title: "Structural steelwork survey",
     location: "Petrochem refinery",
     category: "Industrial",
@@ -147,6 +164,7 @@ export const work: Shot[] = [
     reel: 10,
   },
   {
+    slug: "expressway-at-night",
     title: "Expressway at night",
     location: "Delhi NCR",
     category: "Urban and transit",
@@ -157,6 +175,7 @@ export const work: Shot[] = [
     reel: 11,
   },
   {
+    slug: "river-basin-delta",
     title: "River basin delta",
     location: "Narmada Valley",
     category: "Scenic and heritage",
@@ -172,3 +191,13 @@ export const work: Shot[] = [
 export const shots = work
   .filter((s): s is Shot & { reel: number } => s.reel !== undefined)
   .sort((a, b) => a.reel - b.reel);
+
+export function shotBySlug(slug: string) {
+  return work.find((s) => s.slug === slug);
+}
+
+/** The flight after this one on /work, wrapping round, so every case page links on to another. */
+export function nextShot(slug: string) {
+  const i = work.findIndex((s) => s.slug === slug);
+  return work[(i + 1) % work.length];
+}

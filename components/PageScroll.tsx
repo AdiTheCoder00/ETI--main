@@ -13,6 +13,10 @@ gsap.registerPlugin(useGSAP, ScrollTrigger, SplitText);
  * Smooth scroll and the page-level reveals for the pages that have no loader. Without this /work
  * drops to native scroll halfway through a visit, which reads as a different site. Same Lenis
  * settings and same two moves as the homepage; the gallery brings in its own card wipes.
+ *
+ * Pages opt elements in by attribute, so each page keeps its own markup:
+ * - `data-lift`: a heading whose lines rise out of their mask, driven by its parent block.
+ * - `data-wipe`: a block wiped in from the left.
  */
 export function PageScroll() {
   useGSAP((_ctx, contextSafe) => {
@@ -29,9 +33,8 @@ export function PageScroll() {
     let dead = false;
     const build = safe(() => {
       if (dead) return;
-      liftLines("#work-h", ".gal-head");
-      wipe(".gal-head p", "top 92%", "top 68%");
-      liftLines("#ask-h", ".gal-ask");
+      for (const h of document.querySelectorAll<HTMLElement>("[data-lift]")) liftLines(h, h.parentElement ?? h);
+      for (const el of document.querySelectorAll<HTMLElement>("[data-wipe]")) wipe(el, "top 92%", "top 68%");
       ScrollTrigger.refresh();
     });
     document.fonts.ready.then(build);

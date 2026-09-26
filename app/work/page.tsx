@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 import { PageScroll } from "@/components/PageScroll";
+import { PlacesMap } from "@/components/PlacesMap";
 import { WorkGallery } from "@/components/WorkGallery";
 
 export const metadata: Metadata = {
@@ -28,6 +29,16 @@ export default function WorkPage() {
         </header>
 
         <WorkGallery />
+
+        <section className="places" aria-labelledby="places-h">
+          <div className="places-head">
+            <h2 className="display h2" id="places-h" data-lift>
+              Where we’ve flown
+            </h2>
+            <p data-wipe>Where the flights on this page were shot, and four jobs whose footage is no longer online.</p>
+          </div>
+          <PlacesMap />
+        </section>
 
         <div className="gal-ask">
           <h2 className="display h2" id="ask-h" data-lift>

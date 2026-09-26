@@ -200,6 +200,38 @@ html.is-loading{overflow:hidden}
 .card-link:focus-visible::after{box-shadow:inset 0 0 0 2px var(--accent)}
 .gal-play{z-index:2}
 
+/* ---------- flown places map (/work) ---------- */
+.places{margin-top:clamp(96px,11vw,176px)}
+.places-head{display:flex;flex-direction:column;gap:16px;margin-bottom:clamp(28px,4vw,48px)}
+.places-head p{margin:0;max-width:34em;font-family:var(--stand);font-weight:500;letter-spacing:-.01em;font-size:19px;line-height:1.55;color:var(--body2)}
+.places-body{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(32px,5vw,72px);align-items:start}
+.places-map{margin:0;display:flex;flex-direction:column;gap:14px}
+.places-map svg{display:block;width:100%;height:auto;overflow:visible}
+.places-map .land{fill:var(--rule);fill-opacity:.55;stroke:var(--muted);stroke-width:1.4;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.pin{cursor:pointer}
+.pin .hit{fill:transparent}
+.pin .dot{fill:var(--accent);stroke:var(--paper);stroke-width:3;transition:transform .45s var(--ease)}
+.pin .area{fill:var(--accent);fill-opacity:.14;stroke:var(--accent);stroke-width:2;stroke-dasharray:6 6;vector-effect:non-scaling-stroke;transition:fill-opacity .35s var(--ease)}
+.pin .label{font-family:var(--sans);font-size:30px;font-weight:600;fill:var(--ink);paint-order:stroke;stroke:var(--paper);stroke-width:8px;stroke-linejoin:round;opacity:0;transition:opacity .3s var(--ease);pointer-events:none}
+.pin.is-on .dot{transform:scale(1.5)}
+.pin.is-on .area{fill-opacity:.3}
+.pin.is-on .label{opacity:1}
+.places-key{display:flex;gap:24px;font-family:var(--sans);font-size:13px;color:var(--muted)}
+.places-key span{display:inline-flex;align-items:center;gap:8px}
+.places-key .k-place::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--accent)}
+.places-key .k-region::before{content:"";width:14px;height:14px;border-radius:50%;border:1.5px dashed var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.places-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--ink)}
+.places-list > li{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:4px 20px;padding:12px 0;border-bottom:1px solid var(--rule);font-family:var(--sans);transition:background-color .35s var(--ease)}
+.places-list > li.is-on{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.pl-name{font-size:16px;font-weight:700}
+.places-list ul{list-style:none;margin:0;padding:0;font-size:15px}
+.places-list ul a{text-underline-offset:4px;transition:color .35s var(--ease)}
+.places-list small{display:block;margin-top:2px;color:var(--muted);font-size:13px}
+.places-note{margin:18px 0 0;font-family:var(--sans);font-size:15px;line-height:1.55;color:var(--muted)}
+.places-note a{color:var(--ink);text-underline-offset:4px}
+@media (max-width:1023px){.places-body{grid-template-columns:1fr}.places-map{max-width:560px}}
+@media (prefers-reduced-motion:reduce){.pin .dot,.pin .area,.pin .label,.places-list > li{transition:none}}
+
 /* ---------- case pages (/work/[slug]) ---------- */
 .case{padding-top:clamp(28px,4vw,56px)}
 .case-crumb{display:flex;gap:10px;flex-wrap:wrap;font-family:var(--sans);font-size:14px;color:var(--muted);margin-bottom:clamp(20px,3vw,36px)}

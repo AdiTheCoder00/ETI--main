@@ -21,7 +21,7 @@ Site
   loader never flashes) and then stripped from the URL. For the same reason `phase` starts as
   `"loading"` on every render — deciding it from the URL in the initialiser would make the client
   disagree with the prerendered HTML. Skipping the intro skips **only the loader**: Lenis, the
-  reveals and the altimeter are still set up, or coming back from `/work` would hand over a dead page.
+  reveals are still set up, or coming back from `/work` would hand over a dead page.
 - `app/page.tsx`: the one-page site, a server component. Copy and markup are unchanged from the prototype.
 - `components/SiteMotion.tsx`: everything the prototype's `main.js` did (loader, Lenis, GSAP scroll moments),
   in one `useGSAP` hook that works on the page DOM by id. `components/Nav.tsx` (menu) and
@@ -33,14 +33,18 @@ Site
 - **three is pinned to 0.149.0** on purpose: later versions changed light units and removed PCFSoftShadowMap,
   which changes the loader's look. Only upgrade while comparing frames against the current render.
 - Stills live in `assets/work/` and go through `next/image`; `lib/work.ts` is the single source for all 12
-  flights and both places they appear. The hero clip is `public/media/hero.mp4` (1.4 MB); set
+  flights and both places they appear. The hero clip is `public/media/hero.mp4` (5.8 MB, 1280×720 at 60 fps, re-encoded Sept 2026 from the old site's 720p source; the earlier 1100×618 copy looked soft); set
   `NEXT_PUBLIC_HERO_VIDEO_URL` to move it to a CDN. Don't commit more large video: host it (Mux, Cloudflare
   Stream, Vercel Blob) and link it.
 - **The clips (Sept 2026).** The 12 clips that still existed on the old site were pulled into
   `public/media/clips/`, which is **gitignored** — they work locally and must go on a CDN for production via
   `NEXT_PUBLIC_CLIPS_BASE_URL` (see `clipUrl()` in `lib/work.ts`). Four of the old site's clips
   (bridge-arch, bridge-sunset, crane-sunset, construction-site) were already 404 on its own server and are gone.
-  Two flights have no still cut for them, so the reel shows the clip's own first frame via `#t=0.1`.
+  Every flight now has a still. The stills were re-cut in Sept 2026 at the clips' native 1280×720 from the
+  same frames as before (the old 1400px ones had been enlarged from 720p, which is why they looked soft);
+  the sharpest frame within ±3 of each was taken. The clips on the old server are all 720p, so anything
+  sharper needs the owner's originals. A shot with no still still falls back to the clip's first frame via
+  `#t=0.1`, with a "Footage unavailable" label behind it for when the clip can't be fetched.
   The old site's copy ("Locomotive Rail Yard Yard-Master", "4K Volumetric") was rewritten into house style on
   the way in — don't carry that voice back.
 - `/work` (`app/work/page.tsx` + `components/WorkGallery.tsx`): the full gallery, filtered by the four
@@ -81,8 +85,8 @@ Checks: `npm run lint`, `npm run typecheck`, `npm test` (vitest, `tests/`), `npm
 - The page is scroll-driven (Sept 2026, owner's call): every section is uncovered by the scroll itself, so
   the whole page reads as one descent. The vocabulary is fixed — left-to-right clip wipes (strip, service
   rows, kit, contact details), lines rising out of their own mask (section headings, via SplitText),
-  parallax inside a crop (hero video, studio photo), the pinned horizontal reel, and the side altimeter
-  drone that descends and banks across the full page. Reveals are scrubbed, never triggered-and-played,
+  parallax inside a crop (hero video, studio photo), and the pinned horizontal reel. (The side altimeter
+  drone was removed at the owner's request, Sept 2026; don't bring it back.) Reveals are scrubbed, never triggered-and-played,
   so scrolling back up puts them back. Initial hidden states are set from JS only, never in CSS, so
   no-JS and reduced-motion get the plain page. Reuse those moves rather than inventing new ones;
   fade-up-on-scroll stays banned. The admin has none.
@@ -93,8 +97,8 @@ Checks: `npm run lint`, `npm run typecheck`, `npm test` (vitest, `tests/`), `npm
   out of the gimbal lens: a circular mask hole on the loader that starts as the lens glass and grows to cover the
   screen. The view camera eases its aim onto the lens during the fly-in so the lens stays centred. Without WebGL,
   the SVG fallback keeps the older fly-off and curtain wipe. ScrollTrigger is set up only after the loader
-  finishes — one frame after, because `setPhase("done")` is what reveals the altimeter, and measuring it before
-  React commits reads a hidden element as zero height and the drone then never travels.
+  finishes — one frame after `setPhase("done")`, so React has committed (the loader is gone) before anything
+  is measured.
 - The loader's rotors are synthesised in `lib/motion/droneSound.ts` (Web Audio: detuned saws for the motors,
   band-passed noise for the wash, a tremolo for the blade chop), driven from the same frame loop as the flight.
   It is **on by default** (owner's call, Sept 2026) behind a "Sound off/on" toggle, and stops with the loader.

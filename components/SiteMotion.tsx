@@ -34,6 +34,10 @@ export function SiteMotion() {
   const loaderRef = useRef<HTMLDivElement>(null);
   const soundRef = useRef<DroneSound | null>(null);
   const skipRef = useRef<(() => void) | null>(null);
+  // Read the return-route flag once. The effect below strips it from the URL, and useGSAP can run
+  // again (StrictMode, Fast Refresh): re-reading the URL then took the loader path on a page whose
+  // loader was already gone, which left the hero hidden and the scroll locked.
+  const skipIntroRef = useRef<boolean | null>(null);
 
   useEffect(() => {
     // The return-route flag is a one-time instruction. useGSAP has already read it by now, so
@@ -66,9 +70,29 @@ export function SiteMotion() {
       if (skipRef.current) skipRef.current();
       else setPhase("static");
     };
-    const fallback = window.setTimeout(dismiss, 12_000);
+    // Count only the time the page is on screen. A tab opened in the background gets no frames,
+    // so the intro hasn't moved; firing anyway threw it away before anyone had seen it.
+    let left = 12_000;
+    let startedAt = 0;
+    let timer = 0;
+    const run = () => {
+      startedAt = performance.now();
+      timer = window.setTimeout(dismiss, left);
+    };
+    const pause = () => {
+      if (!timer) return;
+      window.clearTimeout(timer);
+      timer = 0;
+      left -= performance.now() - startedAt;
+    };
+    const onVisibility = () => (document.visibilityState === "hidden" ? pause() : !timer && run());
+    if (document.visibilityState !== "hidden") run();
+    document.addEventListener("visibilitychange", onVisibility);
 
-    return () => window.clearTimeout(fallback);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [phase]);
 
   useGSAP((_ctx, contextSafe) => {
@@ -76,7 +100,8 @@ export function SiteMotion() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const html = document.documentElement;
     const video = document.getElementById("hero-video") as HTMLVideoElement | null;
-    const loader = loaderRef.current!;
+    skipIntroRef.current ??= shouldSkipIntro();
+    const loader = loaderRef.current;
     let disposed = false;
     const cleanups: (() => void)[] = [];
     // Declared up here, not next to setupScroll: the return-from-/work path below leaves the hook
@@ -86,12 +111,25 @@ export function SiteMotion() {
 
     function playVideo() {
       if (!video || reduce) return;
-      video.play()?.catch(() => {});
+      video.play()?.catch(() => {
+        // Autoplay refused (data saver, low power mode): start on the first touch rather than
+        // leaving a still frame for the whole visit.
+        if (disposed) return;
+        const events = ["pointerdown", "keydown", "touchstart"] as const;
+        const off = () => events.forEach((e) => window.removeEventListener(e, retry));
+        const retry = () => {
+          off();
+          video.play()?.catch(() => {});
+        };
+        events.forEach((e) => window.addEventListener(e, retry, { passive: true }));
+        cleanups.push(off);
+      });
     }
 
     // The intro is a first-visit moment, not a transition tax when returning from /work. Read
     // before the browser paints, so the loader never flashes on the way back.
-    const skipLoader = phase !== "loading" || shouldSkipIntro();
+    // No loader in the DOM (already committed away) means there is nothing to play.
+    const skipLoader = phase !== "loading" || skipIntroRef.current || !loader || !document.getElementById("ld3d");
 
     // Reduced motion: plain page, no loader, no smooth scroll.
     if (reduce) {
@@ -144,9 +182,9 @@ export function SiteMotion() {
     cleanups.push(() => anchors.forEach((a) => a.removeEventListener("click", onAnchor)));
 
     // Coming back from /work: skip the loader, keep the page. Returning out of the hook here
-    // instead would hand back a homepage on native scroll with nothing revealed and no altimeter.
+    // instead would hand back a homepage on native scroll with nothing revealed.
     // The hero is left alone rather than prepared and replayed, so it is simply already there.
-    if (skipLoader) {
+    if (skipLoader || !loader) {
       setPhase("done");
       playVideo();
       gsap.ticker.lagSmoothing(0);
@@ -175,7 +213,9 @@ export function SiteMotion() {
         .timeline({ defaults: { ease: "power4.out" } })
         .to("#hero-cover", { scaleY: 0, duration: 1.1, ease: "power3.inOut" }, 0)
         .to(split!.lines, { yPercent: 0, duration: 1, stagger: 0.08 }, 0.15)
-        .to(heroFades, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.08 }, 0.45);
+        .to(heroFades, { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.08 }, 0.45)
+        // done with the cover: drop it so its will-change layer isn't kept over the video all visit
+        .set("#hero-cover", { display: "none" }, 1.1);
     });
     document.fonts.ready.then(prepHero);
 
@@ -263,6 +303,14 @@ export function SiteMotion() {
       });
     });
 
+    const settleHero = safe(() => {
+      revealed = true;
+      if (!split) return;
+      gsap.set("#hero-cover", { scaleY: 0, display: "none" });
+      gsap.set(split.lines, { yPercent: 0 });
+      gsap.set(heroFades, { autoAlpha: 1, y: 0 });
+    });
+
     // flat fallback: lift the curtain the moment the drone has actually left the frame
     const droneGone = () => sim.x > vw() * 0.36 || sim.y < -vh() * 0.36;
     const clearLoader = safe(() => {
@@ -278,6 +326,8 @@ export function SiteMotion() {
     const irisTween = gsap.to(iris, { p: 1, duration: 0.95, ease: "power2.in", paused: true });
     let stageTop = 0;
     let stageLeft = 0;
+    let loaderW = 0;
+    let loaderH = 0;
     const openIris = () => {
       if (iris.on) return;
       iris.on = true;
@@ -286,16 +336,18 @@ export function SiteMotion() {
       const sr = stage.getBoundingClientRect();
       stageTop = sr.top - lr.top;
       stageLeft = sr.left - lr.left;
+      // measured once: reading them per frame, right after writing the mask vars, forced a layout each frame
+      loaderW = loader.clientWidth;
+      loaderH = loader.clientHeight;
       loader.classList.add("iris");
       // straight away, so the first thing seen through the lens is footage, not the cover
       showHero(0);
     };
-    const drawIris = () => {
-      const l = view!.lens!();
+    const drawIris = (l: { x: number; y: number; r: number }) => {
       const x = l.x + stageLeft;
       const y = l.y + stageTop;
-      const w = loader.clientWidth;
-      const h = loader.clientHeight;
+      const w = loaderW;
+      const h = loaderH;
       const full = Math.hypot(Math.max(x, w - x), Math.max(y, h - y));
       // Start within the black glass, leaving the orange gimbal ring visible at the first frame.
       const lensInteriorR = l.r * 0.72;
@@ -314,15 +366,16 @@ export function SiteMotion() {
       view = null;
       html.classList.remove("is-loading");
       setPhase(skipped ? "static" : "done");
-      if (skipped) showHero(0);
+      // Skipped (or the safety timeout): put the hero straight in. A delayed reveal would wait on the
+      // animation clock, which is exactly what may not be running when the timeout fires.
+      if (skipped) settleHero();
       soundRef.current?.stop();
       soundRef.current = null;
       setSoundOn(false);
       playVideo();
       gsap.ticker.lagSmoothing(0);
       lenis.start();
-      // setPhase is what reveals the altimeter, and React has not committed it yet. Measuring
-      // now reads a hidden element as zero height, so the drone's travel comes out as nothing.
+      // Wait a frame so React has committed setPhase (the loader is gone) before anything is measured.
       // safe() keeps the ScrollTriggers built in here inside the GSAP context: created from a bare
       // rAF they outlive the component and go on firing against the next page's DOM.
       requestAnimationFrame(safe(() => !disposed && setupScroll()));
@@ -352,13 +405,16 @@ export function SiteMotion() {
       if (exited && !wiped && !is3D && droneGone()) clearLoader();
       view?.render(dt);
       // the rotors ride the same state as the flight: throttle from the shadow, brightness from how near it is
-      soundRef.current?.set(tgt.sh, is3D && view?.lens ? Math.min(1, view.lens().r / parkedLensR()) : 0);
-      if (is3D && exited) {
+      // one lens projection per frame, shared by the sound, the iris trigger and the iris itself
+      const lens = is3D && view?.lens ? view.lens() : null;
+      const parkedR = parkedLensR();
+      soundRef.current?.set(tgt.sh, lens ? Math.min(1, lens.r / parkedR) : 0);
+      if (lens && exited) {
         // open as the drone arrives, once the lens is nearly full size
-        if (!iris.on && view!.lens!().r >= parkedLensR() * 0.92) openIris();
+        if (!iris.on && lens.r >= parkedR * 0.92) openIris();
         if (iris.on) {
           irisTween.time(Math.min(irisTween.duration(), irisTween.time() + dt * exitScale));
-          if (drawIris()) return finish();
+          if (drawIris(lens)) return finish();
         }
       }
       rafId = requestAnimationFrame(frame);
@@ -391,7 +447,7 @@ export function SiteMotion() {
       );
 
       // the opening drops away a little slower than the page, so you climb out of it
-      gsap.to(".hero-text", {
+      gsap.to([".hero-head", ".hero-text"], {
         yPercent: -7,
         ease: "none",
         scrollTrigger: { trigger: "#top", start: "top top", end: "bottom top", scrub: true },
@@ -460,18 +516,6 @@ export function SiteMotion() {
       liftLines("#contact-h", "#contact");
       wipe(".details", "top 88%", "top 64%");
 
-      // side altimeter: a small drone that descends as you read down the page and
-      // leans into the direction you are scrolling
-      const bank = gsap.quickTo("#alt svg", "rotation", { duration: 0.6, ease: "power3.out" });
-      gsap.to("#alt svg", {
-        y: () => document.getElementById("alt")!.offsetHeight - 14,
-        ease: "none",
-        scrollTrigger: {
-          trigger: document.body, start: "top top", end: "bottom bottom", scrub: 0.4, invalidateOnRefresh: true,
-          onUpdate: (self) => bank(gsap.utils.clamp(-12, 12, self.getVelocity() / -190)),
-        },
-      });
-
       ScrollTrigger.refresh();
     }
 
@@ -520,16 +564,6 @@ export function SiteMotion() {
           <span id="skip-intro" aria-hidden="true" />
         </div>
       )}
-      {/* scroll-progress drone */}
-      <div className={`alt${phase === "done" ? " on" : ""}`} id="alt" aria-hidden="true">
-        <svg viewBox="0 0 260 120" fill="currentColor">
-          <path d="M92 44 Q96 36 110 36 L150 36 Q164 36 168 44 L172 60 Q173 68 164 68 L96 68 Q87 68 88 60 Z" />
-          <rect x="0" y="16" width="70" height="8" rx="4" />
-          <rect x="190" y="16" width="70" height="8" rx="4" />
-          <path d="M100 54 L34 38 M160 54 L226 38" stroke="currentColor" strokeWidth="12" strokeLinecap="round" />
-          <path d="M104 68 L94 98 M156 68 L166 98" stroke="currentColor" strokeWidth="10" strokeLinecap="round" />
-        </svg>
-      </div>
     </>
   );
 }

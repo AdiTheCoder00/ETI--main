@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { preload } from "react-dom";
 import { ContactForm } from "@/components/ContactForm";
 import { Nav } from "@/components/Nav";
 import { SiteMotion } from "@/components/SiteMotion";
@@ -13,6 +14,8 @@ const heroPoster = process.env.NEXT_PUBLIC_HERO_POSTER_URL ?? "/media/hero-poste
 // No searchParams here on purpose: reading them would opt the whole page out of static
 // rendering for one optional flag that SiteMotion reads from the URL on the client anyway.
 export default function Home() {
+  // The poster is the first thing on screen (and the largest paint): fetch it before the scripts.
+  preload(heroPoster, { as: "image", fetchPriority: "high" });
 
   return (
     <>
@@ -26,20 +29,21 @@ export default function Home() {
       <main>
         {/* ============ HERO ============ */}
         <section id="top" className="hero wrap">
-          <div className="hero-text">
-            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-              <div className="hero-kicker" data-hero-fade>
-                Based in Mumbai, flying across India since 2021
-              </div>
-              <h1 className="display" id="hero-title">
-                We fly cameras where cranes and helicopters can’t go.
-              </h1>
-              <p className="lede" data-hero-fade>
-                Aerial cinematography for films and brands, plus inspection and survey flights for bridges, plants,
-                infrastructure, and construction sites. Small crew, DGCA-compliant operations, and clear communication
-                from first briefing to final delivery.
-              </p>
+          {/* The headline gets the full width so it reads in two lines, not six down a narrow column. */}
+          <div className="hero-head">
+            <div className="hero-kicker" data-hero-fade>
+              Based in Mumbai, flying across India since 2021
             </div>
+            <h1 className="display" id="hero-title">
+              We fly cameras where cranes and helicopters can’t go.
+            </h1>
+          </div>
+          <div className="hero-text">
+            <p className="lede" data-hero-fade>
+              Aerial cinematography for films and brands, plus inspection and survey flights for bridges, plants,
+              infrastructure, and construction sites. Small crew, DGCA-compliant operations, and clear communication
+              from first briefing to final delivery.
+            </p>
             <div className="hero-ctas" data-hero-fade>
               <a href="#work" className="btn btn-accent">
                 See the work
@@ -100,10 +104,17 @@ export default function Home() {
                         alt={s.alt}
                         sizes={s.wide ? "(min-width: 1024px) 44vw, (min-width: 700px) 50vw, 100vw" : "(min-width: 1024px) 30vw, (min-width: 700px) 50vw, 100vw"}
                         placeholder="blur"
+                        quality={90}
                       />
                     ) : (
-                      // no still was ever cut for this one: the clip's own first frame stands in
-                      s.clip && <video src={`${clipUrl(s.clip)}#t=0.1`} muted playsInline preload="metadata" aria-label={s.alt} />
+                      // no still was ever cut for this one: the clip's own first frame stands in. The label
+                      // sits behind it and only shows if the clip can't be fetched (no CDN configured yet).
+                      s.clip && (
+                        <>
+                          <span className="ph-missing" aria-hidden="true">Footage unavailable</span>
+                          <video src={`${clipUrl(s.clip)}#t=0.1`} muted playsInline preload="metadata" aria-label={s.alt} />
+                        </>
+                      )
                     )}
                   </div>
                   <figcaption>
@@ -191,7 +202,7 @@ export default function Home() {
         <section id="studio" className="studio" aria-labelledby="studio-h">
           <div className="studio-media">
             <div className="studio-cover" id="studio-cover" aria-hidden="true" />
-            <Image id="studio-img" src={studioImg} alt="Sunset over a wide river delta with green banks" sizes="(min-width: 1024px) 58vw, 100vw" />
+            <Image id="studio-img" src={studioImg} alt="Sunset over a wide river delta with green banks" sizes="(min-width: 1024px) 58vw, 100vw" quality={90} />
           </div>
           <div className="studio-text">
             <div>

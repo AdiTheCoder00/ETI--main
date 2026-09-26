@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 
-/** Name of the hidden field people never see. Anything in it means a bot filled the form. */
-export const HONEYPOT_FIELD = "website";
+export { HONEYPOT_FIELD } from "./constants";
 
 export const RATE_LIMIT = { max: 5, windowMs: 60 * 60 * 1000 };
 

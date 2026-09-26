@@ -105,7 +105,12 @@ function Card({ shot, reduce }: { shot: Shot; reduce: boolean }) {
   return (
     <li className="gal-item" onMouseEnter={canHover ? play : undefined} onMouseLeave={canHover ? stop : undefined}>
       <div className={`gal-ph${playing ? " is-playing" : ""}`}>
-        {shot.image && <Image src={shot.image} alt={shot.alt} sizes="(min-width: 1024px) 32vw, (min-width: 700px) 48vw, 100vw" placeholder="blur" />}
+        {shot.image && <Image src={shot.image} alt={shot.alt} sizes="(min-width: 1024px) 32vw, (min-width: 700px) 48vw, 100vw" placeholder="blur" quality={90} />}
+        {!shot.image && (
+          <span className="ph-missing" aria-hidden="true">
+            Footage unavailable
+          </span>
+        )}
         {shot.clip && (
           <video
             ref={video}

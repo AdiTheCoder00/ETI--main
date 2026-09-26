@@ -1,15 +1,7 @@
 import { z } from "zod";
+import { JOB_TYPES, type EnquiryField } from "./constants";
 
-/** Options in the contact form's "Type of job" select. The stored value is the label. */
-export const JOB_TYPES = [
-  "Film, ad or music video",
-  "FPV",
-  "Real estate",
-  "Inspection",
-  "Survey and mapping",
-  "Plant monitoring",
-  "Something else",
-] as const;
+export { JOB_TYPES } from "./constants";
 
 export const LEAD_STATUSES = ["new", "quoted", "won", "lost"] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
@@ -49,6 +41,6 @@ export const enquirySchema = z.object({
 });
 
 export type EnquiryInput = z.infer<typeof enquirySchema>;
-export type EnquiryField = keyof EnquiryInput;
+export type { EnquiryField };
 
 export const statusSchema = z.enum(LEAD_STATUSES);

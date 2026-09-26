@@ -262,15 +262,20 @@ export function initDrone3D(stage: HTMLElement, sim: Sim, tgt: Target): DroneVie
 
   const LENS_R = 0.075; // glass radius in model units
   const tmp = new THREE.Vector3();
+  const rel = new THREE.Vector3();
   const fwd = new THREE.Vector3();
+  const tanHalfFov = Math.tan(THREE.MathUtils.degToRad(FOV / 2));
+  // Called every frame of the exit: reuses one result object instead of allocating. Read it, don't keep it.
+  const onScreen = { x: 0, y: 0, r: 0 };
   function lensOnScreen() {
     lensRing.getWorldPosition(tmp);
     camera.getWorldDirection(fwd);
-    const depth = Math.max(camera.near, tmp.clone().sub(camera.position).dot(fwd));
-    const r = ((LENS_R * S) / (2 * depth * Math.tan(THREE.MathUtils.degToRad(FOV / 2)))) * H;
+    const depth = Math.max(camera.near, rel.subVectors(tmp, camera.position).dot(fwd));
+    onScreen.r = ((LENS_R * S) / (2 * depth * tanHalfFov)) * H;
     tmp.project(camera);
-    const W = H * camera.aspect;
-    return { x: ((tmp.x + 1) / 2) * W, y: ((1 - tmp.y) / 2) * H, r };
+    onScreen.x = ((tmp.x + 1) / 2) * H * camera.aspect;
+    onScreen.y = ((1 - tmp.y) / 2) * H;
+    return onScreen;
   }
 
   function approach(radiusPx: number) {

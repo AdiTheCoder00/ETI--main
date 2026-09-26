@@ -9,6 +9,8 @@ import metroStation from "@/assets/work/metro-station.jpg";
 import highriseTowers from "@/assets/work/highrise-towers.jpg";
 import riverSunset from "@/assets/work/river-sunset.jpg";
 import plantFpv from "@/assets/work/plant-fpv.jpg";
+import plantStructure from "@/assets/work/plant-structure.jpg";
+import nightHighway from "@/assets/work/night-highway.jpg";
 
 /** Clips live outside the repo: locally in public/media/clips, on a CDN in production. */
 const clipBase = process.env.NEXT_PUBLIC_CLIPS_BASE_URL ?? "/media/clips";
@@ -138,6 +140,7 @@ export const work: Shot[] = [
     location: "Petrochem refinery",
     category: "Industrial",
     kit: "5.2K ProRes",
+    image: plantStructure,
     clip: "plant-structure.mp4",
     alt: "Steel pipework and structural framing across a refinery seen from above",
     wide: true,
@@ -148,8 +151,9 @@ export const work: Shot[] = [
     location: "Delhi NCR",
     category: "Urban and transit",
     kit: "4K, night",
+    image: nightHighway,
     clip: "night-highway.mp4",
-    alt: "Expressway interchange at night with light trails from moving traffic",
+    alt: "Expressway running to the horizon at night, lit by moving traffic",
     reel: 11,
   },
   {

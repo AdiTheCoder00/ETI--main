@@ -4,8 +4,7 @@ import Script from "next/script";
 import { startTransition, useActionState, useEffect, useRef } from "react";
 import { submitEnquiry } from "@/app/actions";
 import type { EnquiryState } from "@/lib/leads/enquiry";
-import { JOB_TYPES, type EnquiryField } from "@/lib/leads/schema";
-import { HONEYPOT_FIELD } from "@/lib/leads/spam";
+import { ENQUIRY_FIELDS, HONEYPOT_FIELD, JOB_TYPES, type EnquiryField } from "@/lib/leads/constants";
 
 const initial: EnquiryState = { status: "idle", message: "We usually reply within a couple of hours." };
 const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -22,7 +21,7 @@ export function ContactForm() {
     if (state.status === "ok") form.reset();
     // Move focus to the first field that needs fixing, like the old mailto form did.
     const errs = state.fieldErrors ?? {};
-    const first = (["fullname", "email", "type", "where", "msg"] as EnquiryField[]).find((f) => errs[f]);
+    const first = ENQUIRY_FIELDS.find((f) => errs[f]);
     if (first) form.querySelector<HTMLElement>(`[name="${first}"]`)?.focus();
     // Turnstile tokens are single-use; get a fresh one for the next submit.
     (window as { turnstile?: { reset: () => void } }).turnstile?.reset();

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const links = [
   { href: "/work", label: "Work" },
@@ -12,6 +12,25 @@ const links = [
 export function Nav() {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
+
+  // Escape closes the menu, and it shuts itself when the window widens past the drawer breakpoint
+  // so the state never comes back stale on the next narrow view.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      document.getElementById("menubtn")?.focus();
+    };
+    const wide = window.matchMedia("(min-width: 1024px)");
+    const onWide = () => wide.matches && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    wide.addEventListener("change", onWide);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      wide.removeEventListener("change", onWide);
+    };
+  }, [open]);
   // off the homepage the section anchors have to travel there first; SiteMotion only
   // intercepts the bare "#..." form, so the smooth scroll still works where it exists
   const home = usePathname() === "/";
@@ -43,23 +62,18 @@ export function Nav() {
           aria-label="Menu"
           onClick={() => setOpen((o) => !o)}
         >
-          <svg className="bars" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
-            <path d="M3 8h18M3 16h18" />
-          </svg>
-          <svg className="x" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
-            <path d="M5 5l14 14M19 5L5 19" />
-          </svg>
+          <span className="burger" aria-hidden="true">
+            <i />
+            <i />
+          </span>
         </button>
       </nav>
       <div className={`drawer${open ? " open" : ""}`} id="drawer">
-        {links.map((l) => (
-          <a key={l.href} href={to(l.href)} onClick={close}>
-            {l.label}
+        {[...links, { href: "#contact", label: "Get a quote" }].map((l, i) => (
+          <a key={l.label} href={to(l.href)} onClick={close} style={{ "--i": i } as React.CSSProperties}>
+            <span>{l.label}</span>
           </a>
         ))}
-        <a href={to("#contact")} onClick={close}>
-          Get a quote
-        </a>
       </div>
     </header>
   );

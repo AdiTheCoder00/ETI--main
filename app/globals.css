@@ -7,6 +7,9 @@
   --serif:var(--font-source-serif),'Source Serif 4',Georgia,'Times New Roman',serif;
   --stand:var(--font-poppins),'Poppins','Helvetica Neue',Arial,sans-serif;
   --gut:clamp(20px,4.5vw,64px);
+  /* One motion language for every interactive state: fast out, long settle. Never plain ease / linear. */
+  --ease:cubic-bezier(.32,.72,0,1);
+  --ease-swing:cubic-bezier(.45,0,.55,1);
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
@@ -36,7 +39,9 @@ a:hover{color:var(--accent)}
 .btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 26px;border-radius:2px;text-decoration:none;font-family:var(--sans);font-weight:600;font-size:16px;border:0;cursor:pointer}
 .btn-accent{background:var(--accent);color:var(--on-accent)}
 .btn-accent:hover{color:var(--on-accent);filter:brightness(.92)}
-.ulink{font-family:var(--sans);font-weight:600;font-size:16px;text-underline-offset:6px;text-decoration-thickness:2px;min-height:44px;display:inline-flex;align-items:center}
+.ulink{font-family:var(--sans);font-weight:600;font-size:16px;text-underline-offset:6px;text-decoration-thickness:2px;min-height:44px;display:inline-flex;align-items:center;
+  transition:color .35s var(--ease),text-underline-offset .45s var(--ease)}
+.ulink:hover{text-underline-offset:9px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ---------- loader ---------- */
@@ -46,7 +51,7 @@ a:hover{color:var(--accent)}
 .ld-lens::before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.08)}
 .ld-lens::after{content:"";position:absolute;left:var(--ix,50%);top:var(--iy,50%);width:calc(var(--ir,160px) * 2);height:calc(var(--ir,160px) * 2);transform:translate(-50%,-50%) scale(var(--lens-scale,1));border-radius:50%;
   background:radial-gradient(circle at 40% 34%, rgba(255,255,255,.28) 0 3%, rgba(255,255,255,.08) 9%, rgba(0,0,0,.06) 20%, rgba(0,0,0,.72) 52%, #020202 100%);
-  box-shadow:inset 0 0 20px rgba(255,255,255,.16), inset 0 0 42px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.22), 0 0 32px rgba(255,255,255,.06);opacity:1;animation:loader-lens-breathe 1.8s ease-in-out infinite}
+  box-shadow:inset 0 0 20px rgba(255,255,255,.16), inset 0 0 42px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.22), 0 0 32px rgba(255,255,255,.06);opacity:1;animation:loader-lens-breathe 1.8s var(--ease-swing) infinite}
 .ld-stage{flex:1;position:relative;pointer-events:none}
 #drone{position:absolute;left:50%;top:44%;width:clamp(180px,24vw,320px);height:auto;margin-left:calc(clamp(180px,24vw,320px) / -2);transform-origin:50% 40%;color:var(--ink);will-change:transform;filter:drop-shadow(0 18px 26px rgba(0,0,0,.14))}
 .ld-shadow{position:absolute;left:50%;top:calc(44% + clamp(120px,15vw,200px));width:clamp(120px,15vw,200px);height:14px;margin-left:calc(clamp(120px,15vw,200px) / -2);border-radius:50%;background:var(--ink);opacity:.12;filter:blur(6px)}
@@ -72,25 +77,36 @@ html.is-loading{overflow:hidden}
 .brand b{font-size:26px;font-weight:800;font-stretch:75%}
 .brand span{font-size:15px;font-weight:500}
 .links{display:flex;align-items:center;gap:32px;font-family:var(--sans);font-size:15px;font-weight:500}
-.links a{text-decoration:none;transition:color .18s ease}
-.links .cta{padding:12px 20px;background:var(--ink);color:var(--paper);border-radius:2px;transition:background .18s ease, transform .18s ease}
+.links a{text-decoration:none;transition:color .35s var(--ease)}
+.links .cta{padding:12px 20px;background:var(--ink);color:var(--paper);border-radius:2px;transition:background-color .35s var(--ease),transform .45s var(--ease)}
+.links .cta:active{transform:scale(.97);transition-duration:.12s}
 .links .cta:hover{color:var(--paper);background:var(--accent);transform:translateY(-1px)}
-.btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 26px;border-radius:2px;text-decoration:none;font-family:var(--sans);font-weight:600;font-size:16px;border:0;cursor:pointer;transition:transform .18s ease, filter .18s ease, background-color .18s ease}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 26px;border-radius:2px;text-decoration:none;font-family:var(--sans);font-weight:600;font-size:16px;border:0;cursor:pointer;transition:transform .45s var(--ease),filter .35s var(--ease),background-color .35s var(--ease)}
+.btn:active{transform:scale(.97);transition-duration:.12s}
 .btn:hover{transform:translateY(-1px)}
 .menubtn{display:none;width:44px;height:44px;border:0;background:transparent;align-items:center;justify-content:center;padding:0;color:var(--ink);cursor:pointer}
-.menubtn .x{display:none}
-.menubtn[aria-expanded="true"] .x{display:block}
-.menubtn[aria-expanded="true"] .bars{display:none}
-.drawer{display:none;position:absolute;top:100%;left:0;right:0;background:var(--paper);border-bottom:1px solid var(--ink);padding:8px var(--gut) 20px;flex-direction:column;font-family:var(--sans)}
-.drawer.open{display:flex}
-.drawer a{text-decoration:none;font-size:20px;font-weight:600;padding:14px 0;border-bottom:1px solid var(--rule)}
+/* Two bars that turn into the close cross, rather than swapping icons */
+.burger{position:relative;width:22px;height:12px}
+.burger i{position:absolute;left:0;right:0;height:2px;background:currentColor;transition:transform .55s var(--ease)}
+.burger i:first-child{top:0}
+.burger i:last-child{top:10px}
+.menubtn[aria-expanded="true"] .burger i:first-child{transform:translateY(5px) rotate(45deg)}
+.menubtn[aria-expanded="true"] .burger i:last-child{transform:translateY(-5px) rotate(-45deg)}
+/* The drawer unrolls from the nav and each link rises out of its own mask, the way the headings arrive */
+.drawer{position:absolute;top:100%;left:0;right:0;background:var(--paper);border-bottom:1px solid var(--ink);padding:8px var(--gut) 20px;display:flex;flex-direction:column;font-family:var(--sans);
+  visibility:hidden;clip-path:inset(0 0 100% 0);transition:clip-path .6s var(--ease),visibility 0s linear .6s}
+.drawer.open{visibility:visible;clip-path:inset(0 0 -1px 0);transition:clip-path .6s var(--ease),visibility 0s}
+.drawer a{text-decoration:none;font-size:20px;font-weight:600;padding:14px 0;border-bottom:1px solid var(--rule);overflow:hidden}
+.drawer a span{display:block;transform:translateY(110%);transition:transform .7s var(--ease)}
+.drawer.open a span{transform:none;transition-delay:calc(90ms + var(--i,0) * 55ms)}
 .drawer a:last-child{border-bottom:0}
 
 /* ---------- hero ---------- */
-.hero{display:grid;grid-template-columns:5fr 7fr;gap:24px 48px;padding-top:clamp(28px,4vw,56px);padding-bottom:clamp(40px,5vw,72px)}
+.hero{display:grid;grid-template-columns:5fr 7fr;gap:clamp(28px,3.5vw,48px) 48px;padding-top:clamp(28px,4vw,56px);padding-bottom:clamp(40px,5vw,72px)}
+.hero-head{grid-column:1/-1;display:flex;flex-direction:column;gap:20px}
 .hero-text{display:flex;flex-direction:column;justify-content:space-between;gap:36px}
 .hero-kicker{font-family:var(--sans);font-size:14px;font-weight:500;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
-.hero h1{font-size:clamp(46px,5.6vw,86px);line-height:.92}
+.hero h1{font-size:clamp(48px,6.6vw,104px);line-height:.92;max-width:15em;text-wrap:balance}
 .hero h1 .line{overflow:hidden;padding-bottom:.04em;margin-bottom:-.04em}
 /* Standfirst: the line of description under a heading. Poppins Medium, so it reads as a
    caption to the headline rather than as the start of the body copy. */
@@ -99,9 +115,10 @@ html.is-loading{overflow:hidden}
 .hero .btn-accent{box-shadow:0 12px 24px rgba(194,65,12,.18)}
 .hero-ctas{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
 .hero-media{margin:0;display:flex;flex-direction:column;gap:12px}
-.hero-frame{overflow:hidden;aspect-ratio:4/3;background:var(--rule);position:relative}
+.hero-frame{overflow:hidden;aspect-ratio:16/9;background:var(--rule);position:relative}
 .hero-cover{display:none;z-index:1;position:absolute;inset:0;background:var(--paper);transform-origin:50% 0;will-change:transform}
 #loader{will-change:transform}
+@media (min-width:1024px){.hero-frame{max-height:46vh;max-height:46svh}}
 .hero-frame video,.hero-frame img{width:100%;height:100%;object-fit:cover;transform-origin:50% 50%}
 .cap{display:flex;justify-content:space-between;gap:6px 12px;flex-wrap:wrap;font-family:var(--sans);font-size:13px;color:var(--muted)}
 
@@ -109,7 +126,7 @@ html.is-loading{overflow:hidden}
 .strip{border-top:1px solid var(--ink);border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;gap:12px 32px;flex-wrap:wrap;padding-block:22px;font-family:var(--sans);font-size:15px;font-weight:500;margin:0;list-style:none;padding-inline:0}
 
 /* ---------- section heads ---------- */
-.sec{padding-top:clamp(72px,9vw,128px)}
+.sec{padding-top:clamp(96px,11vw,176px)}
 .sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:clamp(28px,4vw,48px)}
 .h2{font-size:clamp(40px,4.6vw,66px)}
 
@@ -117,7 +134,9 @@ html.is-loading{overflow:hidden}
 .reel{position:relative}
 .reel-track{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px 24px}
 .shot{margin:0;display:flex;flex-direction:column;gap:12px}
-.shot .ph{overflow:hidden;background:var(--rule);aspect-ratio:4/3}
+.shot .ph{position:relative;overflow:hidden;background:var(--rule);aspect-ratio:4/3}
+.shot .ph video{position:relative}
+.ph-missing{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-size:14px;color:var(--muted)}
 .shot img,.shot .ph video{width:100%;height:100%;object-fit:cover}
 .shot-meta{display:flex;justify-content:space-between;align-items:baseline;gap:4px 16px;flex-wrap:wrap}
 .shot h3{margin:0;font-family:var(--sans);font-size:21px;font-weight:700}
@@ -146,7 +165,9 @@ html.is-loading{overflow:hidden}
 .gal-filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;border-bottom:1px solid var(--rule);scrollbar-width:none}
 .gal-filters::-webkit-scrollbar{display:none}
 .gal-filter{flex:0 0 auto;min-height:44px;padding:0 16px;border:1px solid var(--rule);background:transparent;color:var(--muted);
-  font-family:var(--sans);font-size:15px;font-weight:600;border-radius:2px;cursor:pointer;white-space:nowrap}
+  font-family:var(--sans);font-size:15px;font-weight:600;border-radius:2px;cursor:pointer;white-space:nowrap;
+  transition:color .35s var(--ease),border-color .35s var(--ease),background-color .35s var(--ease),transform .45s var(--ease)}
+.gal-filter:active{transform:scale(.96);transition-duration:.12s}
 .gal-filter:hover{color:var(--ink);border-color:var(--ink)}
 .gal-filter.is-on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 .gal-count{margin:14px 0 clamp(20px,3vw,32px);font-family:var(--sans);font-size:14px;color:var(--muted)}
@@ -156,6 +177,8 @@ html.is-loading{overflow:hidden}
 .gal-ph img,.gal-ph video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 /* the still sits on top until the clip actually runs, so nothing flashes black */
 .gal-ph video{opacity:0}
+.gal-ph img,.gal-ph video{transition:transform .8s var(--ease)}
+@media (hover:hover) and (prefers-reduced-motion:no-preference){.gal-item:hover .gal-ph img,.gal-item:hover .gal-ph video{transform:scale(1.04)}}
 .gal-ph.is-playing video{opacity:1}
 .gal-ph:not(:has(img)) video{opacity:1}
 .gal-play{position:absolute;right:12px;bottom:12px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;
@@ -224,13 +247,8 @@ html.is-loading{overflow:hidden}
 
 .foot{border-top:1px solid var(--ink);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:24px 40px;font-family:var(--sans);font-size:14px;color:var(--muted)}
 .foot nav{display:flex;gap:24px;flex-wrap:wrap}
-.foot a{color:var(--muted)}
+.foot a{color:var(--muted);transition:color .35s var(--ease)}
 
-/* scroll-progress drone (desktop) */
-.alt{position:fixed;right:18px;top:50%;height:34vh;transform:translateY(-50%);width:28px;z-index:15;display:none;pointer-events:none}
-.alt::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--rule)}
-.alt svg{position:absolute;left:0;top:0;width:28px;height:auto;color:var(--ink)}
-@media (min-width:1024px){.alt.on{display:block}}
 
 /* ---------- tablet ---------- */
 @media (max-width:1023px){
@@ -238,7 +256,7 @@ html.is-loading{overflow:hidden}
   .links a:not(.cta){display:none}
   .menubtn{display:inline-flex}
   .hero{grid-template-columns:1fr}
-  .hero h1{font-size:clamp(46px,9vw,80px);max-width:12em}
+  .hero h1{font-size:clamp(46px,7.4vw,76px)}
   .hero-text{gap:24px}
   .svc{grid-template-columns:1fr}
   .studio{grid-template-columns:1fr}
@@ -247,7 +265,7 @@ html.is-loading{overflow:hidden}
   .form{grid-column:auto}
   .reel-end{grid-column:1/-1}
 }
-@media (min-width:1024px){.drawer.open{display:none}}
+@media (min-width:1024px){.drawer{display:none}}
 
 /* ---------- phone ---------- */
 @media (max-width:699px){
@@ -255,7 +273,8 @@ html.is-loading{overflow:hidden}
   html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px)}
   .brand b{font-size:22px}.brand span{font-size:14px}
   .links .cta{display:none}
-  .hero h1{font-size:clamp(40px,12.4vw,58px)}
+  /* ~43px at 375 wide: "where cranes and" fits one line, so the headline sets in four with no orphan */
+  .hero h1{font-size:clamp(38px,11.4vw,58px);text-wrap:wrap}
   .lede{font-size:18px}
   .hero-media{margin-inline:calc(var(--gut) * -1)}
   .hero-media .cap{padding-inline:var(--gut)}
@@ -278,6 +297,9 @@ html.is-loading{overflow:hidden}
 
 @media (prefers-reduced-motion:reduce){
   #loader{display:none}
+  .drawer,.drawer a span,.burger i{transition:none}
+  .drawer a span{transform:none}
+  .btn:active,.links .cta:active,.gal-filter:active{transform:none}
 }
 
 /* loader exit: the page opens out of the drone's lens (positions set per frame in SiteMotion) */

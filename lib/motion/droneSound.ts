@@ -68,13 +68,16 @@ export function createDroneSound(): DroneSound | null {
 
   // Autoplay policy: a context that has never seen a gesture starts suspended. Take the first one.
   const GESTURES = ["pointerdown", "keydown", "touchstart"] as const;
-  const resume = () => void ctx.resume();
+  // resume() rejects if the context is closed before it settles (the loader ended first); that is fine.
+  const resume = () => void ctx.resume().catch(() => {});
   if (ctx.state === "suspended") {
-    void ctx.resume();
+    resume();
     GESTURES.forEach((e) => window.addEventListener(e, resume, { once: true, capture: true }));
   }
 
   let stopped = false;
+  let lastP = -1;
+  let lastN = -1;
   const ease = (p: AudioParam, v: number) => p.setTargetAtTime(v, ctx.currentTime, 0.08);
 
   return {
@@ -82,11 +85,15 @@ export function createDroneSound(): DroneSound | null {
       if (stopped) return;
       const p = Math.min(1, Math.max(0, power));
       const n = Math.min(1, Math.max(0, near));
+      // Called every frame: skip changes too small to hear, rather than queue ~8 automation events a frame.
+      if (Math.abs(p - lastP) < 0.004 && Math.abs(n - lastN) < 0.004) return;
+      lastP = p;
+      lastN = n;
       ease(master.gain, 0.3 * p);
       ease(lp.frequency, 800 + 1600 * n);
       ease(wash.frequency, 1200 + 900 * n);
       ease(lfo.frequency, 18 + 12 * p);
-      oscs.forEach((o, i) => ease(o.frequency, 94 * ratios[i] * (0.8 + 0.45 * p)));
+      for (let i = 0; i < oscs.length; i++) ease(oscs[i].frequency, 94 * ratios[i] * (0.8 + 0.45 * p));
     },
     stop() {
       if (stopped) return;
@@ -97,7 +104,7 @@ export function createDroneSound(): DroneSound | null {
         oscs.forEach((o) => o.stop());
         lfo.stop();
         noise.stop();
-        void ctx.close();
+        void ctx.close().catch(() => {});
       }, 500);
     },
   };

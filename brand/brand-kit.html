@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ETI Drone Visuals, brand kit</title>
+<!--
+  Brand-kit overview board. Rendered to brand-kit.png at 1920x1200 (2x) with headless Edge.
+  Palette, type and footage are the site's own; the mark is the one new element:
+  a viewfinder (four frame corners) around a lens, with the record dot in hi-vis orange.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Poppins:wght@500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=block" rel="stylesheet">
+<style>
+  :root{
+    --canvas:#0C0B09; --panel:#16150F; --panel-2:#1D1B15;
+    --paper:#F1EEE7; --ink:#16150F; --muted:#5E5A50; --rule:#D6D1C4; --accent:#C2410C;
+    --d-ink:#EEEAE1; --d-muted:#8F8A7D; --d-rule:#34322B; --d-accent:#E0622A;
+    --sans:'Archivo',sans-serif; --serif:'Source Serif 4',serif; --stand:'Poppins',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{width:1920px;height:1200px;background:var(--canvas)}
+  body{padding:40px;font-family:var(--sans);color:var(--d-ink)}
+  .board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:20px;height:100%;
+    grid-template-areas:"cover cover cons web" "cover cover tag col" "type card img sys"}
+  .cover{grid-area:cover}.cons{grid-area:cons}.web{grid-area:web}.tag{grid-area:tag}.col{grid-area:col}.type{grid-area:type}.card{grid-area:card}.img{grid-area:img}.sys{grid-area:sys}
+  .p{position:relative;overflow:hidden;border-radius:6px;background:var(--panel)}
+  .lbl{position:absolute;left:24px;bottom:20px;font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--d-muted)}
+  .lbl.r{left:auto;right:24px}
+  .on-paper .lbl{color:var(--muted)}
+  .cond{font-stretch:72%;font-weight:800;text-transform:uppercase;line-height:.9}
+
+  /* 1 cover */
+  .cover{background:var(--panel);display:flex;flex-direction:column;justify-content:center;padding:0 72px}
+  .cover .lockup{display:flex;align-items:center;gap:34px}
+  .cover svg{width:200px;height:200px}
+  .cover .wm b{display:block;font-size:180px;font-weight:800;font-stretch:72%;letter-spacing:-.01em;line-height:.8}
+  .cover .wm span{display:block;margin-top:16px;font-size:40px;font-weight:500;letter-spacing:-.02em;color:var(--d-ink)}
+  .cover .line{margin-top:72px;max-width:40ch;font-family:var(--stand);font-weight:500;font-size:22px;line-height:1.5;color:var(--d-muted)}
+
+  /* 2 construction */
+  .cons{background:var(--panel-2)}
+  .cons svg{position:absolute;inset:0;width:100%;height:100%}
+
+  /* 3 browser */
+  .web{background:#0F0E0B;padding:18px 18px 0}
+  .chrome{height:100%;border-radius:8px 8px 0 0;background:var(--paper);overflow:hidden;display:flex;flex-direction:column}
+  .bar{height:38px;display:flex;align-items:center;gap:8px;padding:0 14px;background:#E4E0D6;border-bottom:1px solid var(--rule)}
+  .bar i{width:10px;height:10px;border-radius:50%;background:#C9C3B6}
+  .url{margin-left:14px;flex:1;height:22px;border-radius:11px;background:var(--paper);display:flex;align-items:center;gap:8px;padding:0 12px;font-size:12px;color:var(--muted)}
+  .url svg{width:13px;height:13px}
+  .site{flex:1;display:grid;grid-template-columns:1.1fr 1fr;grid-template-rows:auto 1fr;gap:14px;padding:14px 16px 16px;color:var(--ink)}
+  .site h4{text-wrap:balance;font-size:23px;font-stretch:72%;font-weight:800;text-transform:uppercase;line-height:.92}
+  .site .cta{margin-top:14px;display:inline-block;background:var(--accent);color:#fff;font-size:11px;font-weight:600;padding:8px 12px;border-radius:2px}
+  .site .shot{background:url(../assets/work/plant-fpv.jpg) center/cover;border-radius:1px}
+  .site .nav{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;font-size:10px;font-weight:500;border-bottom:1px solid var(--rule);padding-bottom:10px;margin:-4px 0 0}
+  .site .nav .l{display:flex;align-items:center;gap:8px}
+  .site .nav svg{width:18px;height:18px}
+
+  /* 4 tagline */
+  .tag{background:var(--accent);color:#fff;display:flex;align-items:center;padding:0 32px 12px}
+  .tag h2{font-size:64px;letter-spacing:-.005em}
+  .tag .lbl{color:rgba(255,255,255,.72)}
+
+  /* 5 colour */
+  .col{display:grid;grid-template-columns:1.1fr 1.1fr 1fr .8fr .8fr;gap:0;background:var(--panel)}
+  .sw{position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:0 10px 54px;font-size:12px;font-weight:600}
+  .sw small{font-size:10px}
+  .sw small{display:block;margin-top:4px;font-weight:500;opacity:.7}
+
+  /* 6 type */
+  .type{background:var(--paper);color:var(--ink);padding:26px 24px;display:grid;grid-template-columns:auto 1fr;column-gap:20px;align-content:start}
+  .type .big{grid-row:span 3;font-size:120px;font-stretch:72%;font-weight:800;line-height:.8}
+  .type .row{padding:10px 0;border-bottom:1px solid var(--rule)}
+  .type .row:last-child{border-bottom:0}
+  .type .row b{display:block;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .type .a{font-size:21px;font-stretch:72%;font-weight:800;text-transform:uppercase}
+  .type .s{font-family:var(--serif);font-size:17px}
+  .type .po{font-family:var(--stand);font-weight:500;font-size:15px}
+
+  /* 7 physical: business card pair */
+  .card{background:#2A2820;display:flex;align-items:center;justify-content:center}
+  .cards{position:relative;width:380px;height:240px;transform:scale(.98)}
+  .bc{position:absolute;width:280px;height:162px;border-radius:4px;box-shadow:0 24px 40px rgba(0,0,0,.35),0 2px 6px rgba(0,0,0,.25)}
+  .bc.back{left:0;top:0;background:var(--ink);transform:rotate(-7deg);display:flex;align-items:flex-start;justify-content:flex-start;padding:22px;box-shadow:0 24px 40px rgba(0,0,0,.35),inset 0 0 0 1px #34322B}
+  .bc.back svg{width:52px;height:52px}
+  .bc.front{right:0;bottom:0;background:var(--paper);color:var(--ink);padding:18px 20px;display:flex;flex-direction:column;justify-content:space-between}
+  .bc.front .top{display:flex;align-items:center;gap:10px}
+  .bc.front .top svg{width:24px;height:24px}
+  .bc.front .top b{font-size:22px;font-stretch:72%;font-weight:800}
+  .bc.front .top span{font-size:12px;font-weight:500}
+  .bc.front p{font-size:10.5px;line-height:1.55;color:var(--muted)}
+  .bc.front p strong{color:var(--ink);font-weight:600}
+
+  /* 8 image direction */
+  .img{background:url(../assets/work/hill-temple.jpg) center/cover}
+  .vf{position:absolute;left:50%;top:46%;width:200px;height:200px;transform:translate(-50%,-50%);box-shadow:0 0 0 2000px rgba(12,11,9,.58)}
+  .vf svg{position:absolute;inset:-4px;width:calc(100% + 8px);height:calc(100% + 8px)}
+  .img .lbl{z-index:2;color:rgba(241,238,231,.8)}
+
+  /* 9 system: marks at size */
+  .sys{background:var(--panel-2);display:flex;align-items:center;justify-content:center;gap:16px;padding-bottom:26px}
+  .ic{display:flex;flex-direction:column;align-items:center;gap:12px;font-size:11px;color:var(--d-muted);letter-spacing:.08em}
+  .tile{display:flex;align-items:center;justify-content:center}
+  .tile svg{width:58%;height:58%}
+</style>
+</head>
+<body>
+<!-- the mark, defined once -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="frame" viewBox="0 0 100 100">
+      <path d="M8 31V8h23M69 8h23v23M92 69v23H69M31 92H8V69" fill="none" stroke="currentColor" stroke-width="7.5" stroke-linecap="square"/>
+      <circle cx="50" cy="50" r="21" fill="none" stroke="currentColor" stroke-width="7.5"/>
+    </symbol>
+    <symbol id="mark" viewBox="0 0 100 100">
+      <use href="#frame"/>
+      <circle cx="50" cy="50" r="7" fill="var(--dot, #C2410C)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<main class="board">
+
+  <!-- 1 cover -->
+  <section class="p cover">
+    <div class="lockup">
+      <svg style="color:var(--d-ink);--dot:var(--d-accent)"><use href="#mark"/></svg>
+      <div class="wm"><b>ETI</b><span>Drone Visuals</span></div>
+    </div>
+    <p class="line">Aerial film, inspection and survey. DGCA-certified pilots, based in Mumbai.</p>
+    <span class="lbl">Identity</span><span class="lbl r">etidronevisuals.com</span>
+  </section>
+
+  <!-- 2 construction -->
+  <section class="p cons">
+    <svg viewBox="0 0 600 360" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <pattern id="g" width="15" height="15" patternUnits="userSpaceOnUse" x="165" y="45">
+          <path d="M15 0H0V15" fill="none" stroke="#34322B" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <rect x="165" y="45" width="270" height="270" fill="url(#g)"/>
+      <rect x="165" y="45" width="270" height="270" fill="none" stroke="#4A473F" stroke-width="1"/>
+      <!-- guides -->
+      <line x1="300" y1="30" x2="300" y2="330" stroke="#4A473F" stroke-dasharray="3 5"/>
+      <line x1="150" y1="180" x2="450" y2="180" stroke="#4A473F" stroke-dasharray="3 5"/>
+      <circle cx="300" cy="180" r="135" fill="none" stroke="#4A473F" stroke-dasharray="3 5"/>
+      <!-- the mark at 2.7x -->
+      <g transform="translate(165 45) scale(2.7)">
+        <path d="M8 31V8h23M69 8h23v23M92 69v23H69M31 92H8V69" fill="none" stroke="#EEEAE1" stroke-width="7.5" stroke-linecap="square"/>
+        <circle cx="50" cy="50" r="21" fill="none" stroke="#EEEAE1" stroke-width="7.5"/>
+        <circle cx="50" cy="50" r="7" fill="#E0622A"/>
+      </g>
+      <!-- callouts -->
+      <g font-family="Archivo" font-size="12" font-weight="600" fill="#8F8A7D" letter-spacing="1.4">
+        <line x1="435" y1="66" x2="505" y2="66" stroke="#8F8A7D"/><text x="512" y="70">FRAME</text>
+        <line x1="373" y1="180" x2="505" y2="150" stroke="#8F8A7D"/><text x="512" y="154">LENS</text>
+        <line x1="319" y1="180" x2="505" y2="214" stroke="#E0622A"/><text x="512" y="218" fill="#E0622A">RECORD</text>
+      </g>
+    </svg>
+    <span class="lbl">Construction, 100-unit grid</span>
+  </section>
+
+  <!-- 3 web -->
+  <section class="p web">
+    <div class="chrome">
+      <div class="bar"><i></i><i></i><i></i>
+        <div class="url"><svg style="color:var(--ink)"><use href="#mark"/></svg>etidronevisuals.com</div>
+      </div>
+      <div class="site">
+        <div class="nav"><span class="l"><svg style="color:var(--ink)"><use href="#mark"/></svg><b style="font-stretch:72%;font-weight:800;font-size:14px">ETI</b> Drone Visuals</span><span>Work &nbsp; Services &nbsp; Contact</span></div>
+        <div>
+          <h4>We fly cameras where cranes and helicopters can’t go.</h4>
+          <span class="cta">See the work</span>
+        </div>
+        <div class="shot"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 tagline -->
+  <section class="p tag">
+    <h2 class="cond">Where cranes<br>can’t go.</h2>
+    <span class="lbl">Line</span>
+  </section>
+
+  <!-- 5 colour -->
+  <section class="p col">
+    <div class="sw" style="background:#F1EEE7;color:#16150F">Paper<small>#F1EEE7</small></div>
+    <div class="sw" style="background:#16150F;color:#EEEAE1;box-shadow:inset 1px 0 0 #2A2821,inset -1px 0 0 #2A2821">Ink<small>#16150F</small></div>
+    <div class="sw" style="background:#C2410C;color:#fff">Hi-vis<small>#C2410C</small></div>
+    <div class="sw" style="background:#5E5A50;color:#F1EEE7">Muted<small>#5E5A50</small></div>
+    <div class="sw" style="background:#D6D1C4;color:#16150F">Rule<small>#D6D1C4</small></div>
+    <span class="lbl" style="color:#5E5A50">Colour</span>
+  </section>
+
+  <!-- 6 type -->
+  <section class="p type on-paper">
+    <div class="big">Aa</div>
+    <div class="row"><b>Headline</b><span class="a">Archivo 800, 72%</span></div>
+    <div class="row"><b>Body</b><span class="s">Source Serif 4</span></div>
+    <div class="row"><b>Standfirst</b><span class="po">Poppins Medium</span></div>
+    <span class="lbl">Type</span>
+  </section>
+
+  <!-- 7 card -->
+  <section class="p card">
+    <div class="cards">
+      <div class="bc back"><svg style="color:#EEEAE1;--dot:#E0622A"><use href="#mark"/></svg></div>
+      <div class="bc front">
+        <div class="top"><svg style="color:var(--ink)"><use href="#mark"/></svg><b>ETI</b><span>Drone Visuals</span></div>
+        <p><strong>contact@etidronevisuals.com</strong><br>etidronevisuals.com<br>Bandra-Kurla Complex, Mumbai</p>
+      </div>
+    </div>
+    <span class="lbl">Stationery</span>
+  </section>
+
+  <!-- 8 image -->
+  <section class="p img">
+    <div class="vf"><svg style="color:#F1EEE7" viewBox="0 0 100 100"><path d="M8 31V8h23M69 8h23v23M92 69v23H69M31 92H8V69" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="square"/></svg></div>
+    <span class="lbl">Image, real footage in the frame</span>
+  </section>
+
+  <!-- 9 system -->
+  <section class="p sys">
+    <div class="ic"><div class="tile" style="width:96px;height:96px;border-radius:21px;background:#C2410C;color:#fff;--dot:#16150F"><svg><use href="#mark"/></svg></div>App</div>
+    <div class="ic"><div class="tile" style="width:68px;height:68px;border-radius:50%;background:#F1EEE7;color:#16150F"><svg><use href="#mark"/></svg></div>Avatar</div>
+    <div class="ic"><div class="tile" style="width:44px;height:44px;border-radius:8px;background:#16150F;color:#EEEAE1;box-shadow:inset 0 0 0 1px #34322B;--dot:#E0622A"><svg style="width:70%;height:70%"><use href="#mark"/></svg></div>Tab</div>
+    <div class="ic"><div class="tile" style="width:32px;height:32px;color:#EEEAE1;--dot:#E0622A"><svg style="width:100%;height:100%"><use href="#mark"/></svg></div>32 px</div>
+    <div class="ic"><div class="tile" style="width:16px;height:16px;color:#EEEAE1;--dot:#E0622A"><svg style="width:100%;height:100%"><use href="#mark"/></svg></div>16 px</div>
+    <span class="lbl">Mark at size</span>
+  </section>
+
+</main>
+</body>
+</html>

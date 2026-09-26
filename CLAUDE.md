@@ -55,6 +55,12 @@ Site
   button is click-only on purpose — on `focus` it started every clip in turn while tabbing. Under
   reduced motion hover does nothing and only the button plays. The homepage reel shows every flight too and
   links here; it is no longer a teaser, so there is no "ask for the full reel" CTA.
+- **Reel hover previews** (`components/ReelShot.tsx`, Sept 2026): resting the pointer on a reel frame plays
+  its clip over the still. Attached on first hover, never on load; starts only after a short intent delay
+  *and* once scrolling has been quiet for 250 ms, because the pinned reel slides under a parked cursor and
+  would otherwise start (and download) clip after clip. Fades in on `playing`, not on hover, so a slow
+  connection shows the still, not black. The preview video gets the same parallax as its still. Hover
+  devices only, never under reduced motion; touch and keyboard reach the clip via the case page.
 - **Case pages** (`app/work/[slug]/page.tsx`, Sept 2026): one static page per flight, slugs from `lib/work.ts`
   (keep them stable once live: they are what gets indexed). Clip (`components/CaseClip.tsx`: plays muted
   while on screen, pauses off screen, never autoplays under reduced motion), location, type of work, kit,
@@ -146,6 +152,7 @@ design rules ban. Add any of these back only with a real figure from the owner.
 3. **Quote estimator.** Service + city + days gives a rough price range and creates a lead (reuse
    `handleEnquiry`/the lead store with `source: "quote_estimator"`). Pricing comes from the owner; never invent numbers.
 4. ~~Map of flown locations~~ (done, on `/work`).
-5. **Small wins.** WhatsApp chat button, hover video previews in the reel, client logos (with permission).
+5. **Small wins.** WhatsApp chat button (needs a real number), client logos (with permission). Reel hover
+   previews are done.
 
 The owner hasn't picked an order for 2 to 5, so ask before starting.

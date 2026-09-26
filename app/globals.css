@@ -137,6 +137,9 @@ html.is-loading{overflow:hidden}
 .shot{margin:0;display:flex;flex-direction:column;gap:12px}
 .shot .ph{position:relative;overflow:hidden;background:var(--rule);aspect-ratio:4/3}
 .shot .ph video{position:relative}
+/* hover preview: sits over the still and fades in once it is really playing */
+.shot .ph > video.preview{position:absolute;inset:0;opacity:0;transition:opacity .5s var(--ease)}
+.shot .ph.is-playing > video.preview{opacity:1}
 .ph-missing{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-size:14px;color:var(--muted)}
 .shot img,.shot .ph video{width:100%;height:100%;object-fit:cover}
 .shot-meta{display:flex;justify-content:space-between;align-items:baseline;gap:4px 16px;flex-wrap:wrap}

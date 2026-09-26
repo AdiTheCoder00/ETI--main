@@ -478,8 +478,9 @@ export function SiteMotion() {
           ease: "none",
           scrollTrigger: { trigger: sec, start: () => `top ${navH()}`, end: () => `+=${dist()}`, scrub: true, invalidateOnRefresh: true },
         });
-        // each frame counter-drifts slightly inside its crop, like a slow pan
-        gsap.utils.toArray<HTMLElement>("#reel-track .ph img").forEach((img) => {
+        // each frame counter-drifts slightly inside its crop, like a slow pan; the hover preview drifts
+        // with its still, or it would jump sideways the moment it fades in
+        gsap.utils.toArray<HTMLElement>("#reel-track .ph > img, #reel-track .ph > video.preview").forEach((img) => {
           gsap.fromTo(
             img,
             { xPercent: -4, scale: 1.1 },

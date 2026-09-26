@@ -4,8 +4,9 @@ import { preload } from "react-dom";
 import { ContactForm } from "@/components/ContactForm";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
+import { ReelShot } from "@/components/ReelShot";
 import { SiteMotion } from "@/components/SiteMotion";
-import { clipUrl, shots } from "@/lib/work";
+import { shots } from "@/lib/work";
 import studioImg from "@/assets/work/river-sunset.jpg";
 
 // Override with a CDN URL (e.g. Cloudflare Stream, Mux, Vercel Blob) once the reel grows.
@@ -97,39 +98,11 @@ export default function Home() {
           <div className="reel-viewport">
             <div className="reel-track wrap" id="reel-track">
               {shots.map((s) => (
-                <figure key={s.title} className={`shot${s.wide ? " wide" : ""}`}>
-                  <div className="ph">
-                    {s.image ? (
-                      <Image
-                        src={s.image}
-                        alt={s.alt}
-                        sizes={s.wide ? "(min-width: 1024px) 44vw, (min-width: 700px) 50vw, 100vw" : "(min-width: 1024px) 30vw, (min-width: 700px) 50vw, 100vw"}
-                        placeholder="blur"
-                        quality={90}
-                      />
-                    ) : (
-                      // no still was ever cut for this one: the clip's own first frame stands in. The label
-                      // sits behind it and only shows if the clip can't be fetched (no CDN configured yet).
-                      s.clip && (
-                        <>
-                          <span className="ph-missing" aria-hidden="true">Footage unavailable</span>
-                          <video src={`${clipUrl(s.clip)}#t=0.1`} muted playsInline preload="metadata" aria-label={s.alt} />
-                        </>
-                      )
-                    )}
-                  </div>
-                  <figcaption>
-                    <div className="shot-meta">
-                      <h3>
-                        <Link href={`/work/${s.slug}`} className="card-link">
-                          {s.title}
-                        </Link>
-                      </h3>
-                      <span className="loc">{s.location}</span>
-                    </div>
-                    {s.note && <p>{s.note}</p>}
-                  </figcaption>
-                </figure>
+                <ReelShot
+                  key={s.slug}
+                  shot={s}
+                  sizes={s.wide ? "(min-width: 1024px) 44vw, (min-width: 700px) 50vw, 100vw" : "(min-width: 1024px) 30vw, (min-width: 700px) 50vw, 100vw"}
+                />
               ))}
               <div className="reel-end">
                 <p>Every flight above, with the footage, is on the work page. Filter it by what you need shot.</p>

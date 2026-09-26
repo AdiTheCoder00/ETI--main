@@ -58,7 +58,7 @@ Site
 - **Case pages** (`app/work/[slug]/page.tsx`, Sept 2026): one static page per flight, slugs from `lib/work.ts`
   (keep them stable once live: they are what gets indexed). Clip (`components/CaseClip.tsx`: plays muted
   while on screen, pauses off screen, never autoplays under reduced motion), location, type of work, kit,
-  note, and a "Result" block that only appears when the owner has given one via `result` — never write one.
+  and note. There is no results section: the old site had none to carry over, so it was removed.
   Title, description, canonical and share image come from the same fields. Unknown slugs 404
   (`dynamicParams = false`). Every title on `/work` and the homepage reel links to its page (the whole card
   is the link; the play button sits above it). `app/sitemap.ts` and `app/robots.ts` use `NEXT_PUBLIC_SITE_URL`.
@@ -123,13 +123,18 @@ Checks: `npm run lint`, `npm run typecheck`, `npm test` (vitest, `tests/`), `npm
   first visit the intro is therefore silent until the visitor touches the page — that is the autoplay policy,
   not a bug, and no amount of code changes it. No audio file ships; don't reuse the old site's music track.
 
-## Placeholders the owner still needs to fill
-[YEAR] founded, [FOUNDER NAME], [N] pilots, [PHONE NUMBER], the chimney project result line, and a repeat-client line.
-The old site's phone numbers (98200 12345 etc.) looked fake and were deliberately not carried over.
+## Facts not on the site (Sept 2026)
+The placeholders were settled against the old site's copy: anything it stated was kept, anything it didn't was
+taken out rather than left in [BRACKETS]. It gives no founding year, founder name, crew size or project results,
+so the site states none: "since 2021" came out of the hero (unsourced, and the old site's "8+ Yrs Flight
+Experience" contradicts it), and the case pages have no results section. The old site's phone numbers
+(98200 12345 etc.) looked fake and stay out, so the contact block no longer offers "call, or WhatsApp". Its stats
+row ("500+ Operations Completed", "8+ Yrs Flight Experience", "100% Safety Record") is the round-number counter the
+design rules ban. Add any of these back only with a real figure from the owner.
 
 ## Next: planned work
 1. ~~Enquiry backend and lead inbox~~ (done).
-2. ~~Case study pages~~ (done; the results still need the owner's words, see `result` in `lib/work.ts`).
+2. ~~Case study pages~~ (done).
 3. **Quote estimator.** Service + city + days gives a rough price range and creates a lead (reuse
    `handleEnquiry`/the lead store with `source: "quote_estimator"`). Pricing comes from the owner; never invent numbers.
 4. **Map of flown locations.** 16 locations from the old site's project data (Varanasi, Gujarat, BKC Mumbai,

@@ -33,7 +33,7 @@ export default function Home() {
           {/* The headline gets the full width so it reads in two lines, not six down a narrow column. */}
           <div className="hero-head">
             <div className="hero-kicker" data-hero-fade>
-              Based in Mumbai, flying across India since 2021
+              Based in Mumbai, flying across India
             </div>
             <h1 className="display" id="hero-title">
               We fly cameras where cranes and helicopters can’t go.
@@ -256,7 +256,7 @@ export default function Home() {
               </div>
               <div>
                 <dt>Project enquiries</dt>
-                <dd>Available by email, call, or WhatsApp</dd>
+                <dd>By email, or the form on this page</dd>
               </div>
               <div>
                 <dt>Office</dt>

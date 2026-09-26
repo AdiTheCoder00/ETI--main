@@ -88,12 +88,6 @@ export default async function CasePage({ params }: PageProps<"/work/[slug]">) {
         </dl>
 
         {shot.note && <p className="case-note">{shot.note}</p>}
-        {shot.result && (
-          <section className="case-result" aria-labelledby="result-h">
-            <h2 id="result-h">Result</h2>
-            <p>{shot.result}</p>
-          </section>
-        )}
 
         <Link href={`/work/${next.slug}`} className="case-next">
           <span className="thumb">

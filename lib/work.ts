@@ -33,11 +33,6 @@ export type Shot = {
   /** Wide frames take more of the horizontal reel. */
   wide?: boolean;
   note?: string;
-  /**
-   * What the client got out of it, for the case page. Only from the owner: leave it out rather than
-   * write one. (The chimney audit's result line is still an open placeholder in CLAUDE.md.)
-   */
-  result?: string;
   /** Position in the homepage reel; left out for the ones that only appear on /work. */
   reel?: number;
 };

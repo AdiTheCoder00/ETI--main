@@ -52,7 +52,8 @@ CDN afterwards.
 - `npm run lint`, `npm run typecheck`, `npm test`: checks
 - `npm run footage`: rebuild clips and stills from the masters (see above)
 
-## Still to fill in
+## Facts on the site
 
-Every [BRACKETED] placeholder on the page: founding year, founder name, crew size, phone number, the chimney
-project result, a repeat-client line.
+Nothing is left in brackets. Facts the old site didn't state (founding year, founder, crew size, phone number,
+project results) were taken out rather than guessed; see "Facts not on the site" in CLAUDE.md. Add any of them
+back only with a real figure.

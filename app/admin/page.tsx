@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Mark } from "@/components/Mark";
 import { requireAdmin } from "@/lib/auth";
 import { LEAD_STATUSES, statusSchema, type Lead, type LeadStatus } from "@/lib/leads/schema";
 import { getLeadStore } from "@/lib/leads/store";
@@ -30,6 +31,7 @@ export default async function LeadInbox({ searchParams }: PageProps<"/admin">) {
     <>
       <header className="adm-head">
         <Link href="/" className="brand">
+          <Mark />
           <b>ETI</b>
           <span>Drone Visuals</span>
         </Link>

@@ -65,6 +65,12 @@ Site
 - `components/PageScroll.tsx` reveals by attribute on loader-less pages: `data-lift` on a heading, `data-wipe`
   on a block. Reveal ends are `clamp()`ed to the scroll range (`lib/motion/reveal.ts`): without that, a
   heading near the foot of a page never reached its end marker and stayed half risen.
+- **The mark** (Sept 2026, approved by the owner): a viewfinder, four frame corners around a lens ring, with
+  the record dot in accent. `components/Mark.tsx` (takes the text colour) sits before the ETI wordmark in the
+  nav and admin. Icons in `app/`: `icon.svg` (tab), `favicon.ico` (its 16px entry is redrawn on the pixel
+  grid, the full mark mushes at that size), `apple-icon.png`; the default share image is
+  `app/opengraph-image.jpg` (case pages use their own still). Sources for the board and the share image are
+  in `brand/` (`brand-kit.html`, `og.html`), rendered with headless Edge.
 - Fonts come from `next/font/google` (Archivo with the `wdth` axis, Source Serif 4 with `opsz`), self-hosted.
 
 Enquiry backend (`lib/leads/`, `app/actions.ts`)

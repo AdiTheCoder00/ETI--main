@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Mark } from "./Mark";
 
 const links = [
   { href: "/work", label: "Work" },
@@ -40,6 +41,7 @@ export function Nav() {
   return (
     <header className="nav wrap" id="nav">
       <a href={homeLink} className="brand">
+        <Mark />
         <b>ETI</b>
         <span>Drone Visuals</span>
       </a>

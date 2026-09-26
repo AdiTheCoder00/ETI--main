@@ -74,6 +74,7 @@ html.is-loading{overflow:hidden}
 /* ---------- nav ---------- */
 .nav{position:sticky;top:0;z-index:20;height:72px;display:flex;align-items:center;justify-content:space-between;background:var(--paper);border-bottom:1px solid var(--rule)}
 .brand{display:flex;align-items:baseline;gap:10px;text-decoration:none;font-family:var(--sans);letter-spacing:-.03em}
+.brand svg{flex:none;align-self:center;width:28px;height:28px;margin-right:2px}
 .brand b{font-size:26px;font-weight:800;font-stretch:75%}
 .brand span{font-size:15px;font-weight:500}
 .links{display:flex;align-items:center;gap:32px;font-family:var(--sans);font-size:15px;font-weight:500}

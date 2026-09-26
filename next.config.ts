@@ -10,8 +10,22 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     qualities: [90],
   },
+  // Don't advertise the framework in every response.
+  poweredByHeader: false,
   async headers() {
     return [
+      {
+        // Baseline hardening for every response. No CSP yet: the loader, GSAP and Next's inline scripts
+        // need a nonce set-up to do it without breaking the page.
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+        ],
+      },
       {
         // Hero clip and poster. Not content-hashed, so cache for a day and revalidate in the
         // background rather than forever; a replaced file shows up by the next visit.

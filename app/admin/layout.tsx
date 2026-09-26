@@ -10,5 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <div className="adm wrap">{children}</div>;
+  return (
+    <main id="main" className="adm wrap">
+      {children}
+    </main>
+  );
 }

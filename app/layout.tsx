@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Archivo, Poppins, Source_Serif_4 } from "next/font/google";
 import "lenis/dist/lenis.css";
 import "./globals.css";
+import { baseOpenGraph } from "@/lib/site";
 
 // Archivo's width axis gives the condensed (~72%) headline cut; Source Serif's
 // optical-size axis keeps body text readable at 16-21px.
@@ -32,18 +33,35 @@ export const metadata: Metadata = {
   title: "ETI Drone Visuals — Aerial film, inspection and survey",
   description:
     "Aerial cinematography, structural inspection and survey flights across India. DGCA-certified pilots based in Mumbai.",
+  openGraph: {
+    ...baseOpenGraph,
+    title: "ETI Drone Visuals — Aerial film, inspection and survey",
+    description: "Aerial cinematography, structural inspection and survey flights across India. DGCA-certified pilots based in Mumbai.",
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  // the browser chrome on phones takes the page colour, in both schemes
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F1EEE7" },
+    { media: "(prefers-color-scheme: dark)", color: "#15140F" },
+  ],
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${archivo.variable} ${sourceSerif.variable} ${poppins.variable}`}>
-      <body>{children}</body>
+      <body>
+        {/* first stop for keyboard users: past the nav (and the intro) straight to the page */}
+        <a href="#main" className="skip">
+          Skip to content
+        </a>
+        {children}
+      </body>
     </html>
   );
 }

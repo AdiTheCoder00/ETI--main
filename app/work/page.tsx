@@ -5,11 +5,17 @@ import { Nav } from "@/components/Nav";
 import { PageScroll } from "@/components/PageScroll";
 import { PlacesMap } from "@/components/PlacesMap";
 import { WorkGallery } from "@/components/WorkGallery";
+import { baseOpenGraph, defaultShareImage } from "@/lib/site";
+
+const title = "Work — ETI Drone Visuals";
+const description =
+  "Aerial film, inspection and survey flights across India. Filter the reel by industrial, urban and transit, scenic and heritage, or construction work.";
 
 export const metadata: Metadata = {
-  title: "Work — ETI Drone Visuals",
-  description:
-    "Aerial film, inspection and survey flights across India. Filter the reel by industrial, urban and transit, scenic and heritage, or construction work.",
+  title,
+  description,
+  alternates: { canonical: "/work" },
+  openGraph: { ...baseOpenGraph, title, description, url: "/work", images: [defaultShareImage] },
 };
 
 export default function WorkPage() {
@@ -17,7 +23,7 @@ export default function WorkPage() {
     <>
       <PageScroll />
       <Nav />
-      <main className="wrap gal-page">
+      <main id="main" className="wrap gal-page">
         <header className="gal-head">
           <h1 className="display h2" id="work-h" data-lift>
             Work

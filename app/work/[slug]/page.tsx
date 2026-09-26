@@ -6,6 +6,7 @@ import { CaseClip } from "@/components/CaseClip";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 import { PageScroll } from "@/components/PageScroll";
+import { baseOpenGraph } from "@/lib/site";
 import { clipUrl, nextShot, shotBySlug, work, type Shot } from "@/lib/work";
 
 // One page per flight, all built at build time. A slug that isn't in lib/work.ts is a 404, not a
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: PageProps<"/work/[slug]">): P
     title,
     description,
     alternates: { canonical: `/work/${shot.slug}` },
-    openGraph: { type: "article", title, description, url: `/work/${shot.slug}`, images },
+    openGraph: { ...baseOpenGraph, type: "article", title, description, url: `/work/${shot.slug}`, images },
     twitter: { card: "summary_large_image", title, description },
   };
 }
@@ -46,7 +47,7 @@ export default async function CasePage({ params }: PageProps<"/work/[slug]">) {
     <>
       <PageScroll />
       <Nav />
-      <main className="wrap case">
+      <main id="main" className="wrap case">
         <nav className="case-crumb" aria-label="Breadcrumb">
           <Link href="/work">All work</Link>
           <span aria-hidden="true">/</span>

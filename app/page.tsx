@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { preload } from "react-dom";
@@ -15,6 +16,10 @@ const heroPoster = process.env.NEXT_PUBLIC_HERO_POSTER_URL ?? "/media/hero-poste
 
 // No searchParams here on purpose: reading them would opt the whole page out of static
 // rendering for one optional flag that SiteMotion reads from the URL on the client anyway.
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
+
 export default function Home() {
   // The poster is the first thing on screen (and the largest paint): fetch it before the scripts.
   preload(heroPoster, { as: "image", fetchPriority: "high" });
@@ -28,7 +33,7 @@ export default function Home() {
       <SiteMotion />
       <Nav />
 
-      <main>
+      <main id="main">
         {/* ============ HERO ============ */}
         <section id="top" className="hero wrap">
           {/* The headline gets the full width so it reads in two lines, not six down a narrow column. */}

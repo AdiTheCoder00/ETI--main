@@ -14,7 +14,13 @@ export async function submitEnquiry(_prev: EnquiryState, form: FormData): Promis
   const secret = turnstileSecret();
 
   return handleEnquiry(form, {
-    store: await getLeadStore(),
+    // Resolved lazily, inside handleEnquiry's error handling: loading the store throws when the database
+    // isn't configured, and thrown here it took the whole homepage down instead of showing the form's
+    // "didn't send, email us" message with what the visitor typed still in place.
+    store: {
+      countFromIpSince: async (...args) => (await getLeadStore()).countFromIpSince(...args),
+      create: async (...args) => (await getLeadStore()).create(...args),
+    },
     ipHash: ip ? hashIp(ip, ipSalt()) : null,
     userAgent: h.get("user-agent"),
     verifyHuman: async () =>

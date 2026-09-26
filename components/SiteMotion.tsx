@@ -487,7 +487,24 @@ export function SiteMotion() {
             { xPercent: 4, ease: "none", scrollTrigger: { trigger: img.parentElement, containerAnimation: tw, start: "left right", end: "right left", scrub: true } },
           );
         });
+        // Keyboard: the browser can't scroll a focused card into view here, because the reel only moves
+        // when the page scrolls vertically. Tabbing left focus on cards off the side of the screen. So
+        // scroll the page to the point where the focused card sits at the reel's left margin.
+        const onFocus = (e: FocusEvent) => {
+          const card = (e.target as HTMLElement).closest<HTMLElement>(".shot, .reel-end");
+          const st = tw.scrollTrigger;
+          if (!card || !st) return;
+          const d = dist();
+          const margin = parseFloat(getComputedStyle(track).paddingLeft) || 0;
+          // both rects carry the same translate, so the difference is the card's place on the track
+          const cardX = card.getBoundingClientRect().left - track.getBoundingClientRect().left;
+          const x = Math.min(0, Math.max(-d, margin - cardX));
+          const progress = d ? -x / d : 0;
+          lenis.scrollTo(st.start + progress * (st.end - st.start), { duration: 0.6 });
+        };
+        track.addEventListener("focusin", onFocus);
         return () => {
+          track.removeEventListener("focusin", onFocus);
           sec.classList.remove("is-pinned");
           gsap.set(track, { clearProps: "x" });
         };

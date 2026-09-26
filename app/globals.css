@@ -42,6 +42,10 @@ a:hover{color:var(--accent)}
 .ulink{font-family:var(--sans);font-weight:600;font-size:16px;text-underline-offset:6px;text-decoration-thickness:2px;min-height:44px;display:inline-flex;align-items:center;
   transition:color .35s var(--ease),text-underline-offset .45s var(--ease)}
 .ulink:hover{text-underline-offset:9px}
+/* skip link: off screen until focused, then above everything including the intro */
+.skip{position:fixed;left:12px;top:12px;z-index:200;padding:12px 18px;background:var(--ink);color:var(--paper);font-family:var(--sans);font-weight:600;font-size:15px;text-decoration:none;border-radius:2px;transform:translateY(-200%);transition:transform .35s var(--ease)}
+.skip:focus-visible{transform:none;color:var(--paper)}
+main:focus{outline:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ---------- loader ---------- */
@@ -78,7 +82,7 @@ html.is-loading{overflow:hidden}
 .brand b{font-size:26px;font-weight:800;font-stretch:75%}
 .brand span{font-size:15px;font-weight:500}
 .links{display:flex;align-items:center;gap:32px;font-family:var(--sans);font-size:15px;font-weight:500}
-.links a{text-decoration:none;transition:color .35s var(--ease)}
+.links a{text-decoration:none;transition:color .35s var(--ease);display:inline-flex;align-items:center;min-height:44px}
 .links .cta{padding:12px 20px;background:var(--ink);color:var(--paper);border-radius:2px;transition:background-color .35s var(--ease),transform .45s var(--ease)}
 .links .cta:active{transform:scale(.97);transition-duration:.12s}
 .links .cta:hover{color:var(--paper);background:var(--accent);transform:translateY(-1px)}
@@ -235,6 +239,12 @@ html.is-loading{overflow:hidden}
 @media (max-width:1023px){.places-body{grid-template-columns:1fr}.places-map{max-width:560px}}
 @media (prefers-reduced-motion:reduce){.pin .dot,.pin .area,.pin .label,.places-list > li{transition:none}}
 
+/* ---------- 404 ---------- */
+.missing{padding-top:clamp(48px,8vw,120px);display:flex;flex-direction:column;align-items:flex-start;gap:24px}
+.missing > p{margin:0;max-width:30em;font-family:var(--stand);font-weight:500;letter-spacing:-.01em;font-size:clamp(18px,1.5vw,21px);line-height:1.55;color:var(--body2)}
+.missing-links{display:flex;flex-wrap:wrap;align-items:center;gap:16px 28px;margin-bottom:clamp(72px,10vw,160px)}
+.missing .foot{align-self:stretch}
+
 /* ---------- case pages (/work/[slug]) ---------- */
 .case{padding-top:clamp(28px,4vw,56px)}
 .case-crumb{display:flex;gap:10px;flex-wrap:wrap;font-family:var(--sans);font-size:14px;color:var(--muted);margin-bottom:clamp(20px,3vw,36px)}
@@ -317,9 +327,9 @@ html.is-loading{overflow:hidden}
 /* honeypot: off-screen for people, still in the DOM for form-filling bots */
 .hp{position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}
 
-.foot{border-top:1px solid var(--ink);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:24px 40px;font-family:var(--sans);font-size:14px;color:var(--muted)}
+.foot{border-top:1px solid var(--ink);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding-block:24px 40px;font-family:var(--sans);font-size:14px;color:var(--muted)}
 .foot nav{display:flex;gap:24px;flex-wrap:wrap}
-.foot a{color:var(--muted);transition:color .35s var(--ease)}
+.foot a{color:var(--muted);transition:color .35s var(--ease);display:inline-flex;align-items:center;min-height:44px}
 
 
 /* ---------- tablet ---------- */

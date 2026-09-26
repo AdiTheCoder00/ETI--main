@@ -85,6 +85,15 @@ Site
   grid, the full mark mushes at that size), `apple-icon.png`; the default share image is
   `app/opengraph-image.jpg` (case pages use their own still). Sources for the board and the share image are
   in `brand/` (`brand-kit.html`, `og.html`), rendered with headless Edge.
+- **Hardening and accessibility (Sept 2026 audit).** `next.config.ts` sends nosniff, Referrer-Policy,
+  X-Frame-Options DENY, Permissions-Policy and HSTS on every response, and no X-Powered-By; there is no CSP
+  yet (the loader, GSAP and Next's inline scripts need nonces first). A skip link in the root layout targets
+  `id="main"`, so every page's `<main>` must carry that id. On the desktop reel, keyboard focus scrolls the
+  page to the focused card (the browser can't: the reel only moves with vertical scroll). The contact action
+  resolves the lead store lazily inside `handleEnquiry`'s error handling, so a store failure shows the form's
+  error message instead of crashing the page; `/admin` has an error page for a missing Supabase config. Open
+  Graph: a page that sets `openGraph` replaces the parent's object and loses the file-based share image, so
+  spread `baseOpenGraph` from `lib/site.ts` and pass `defaultShareImage` when it has no still of its own.
 - Fonts come from `next/font/google` (Archivo with the `wdth` axis, Source Serif 4 with `opsz`), self-hosted.
 
 Enquiry backend (`lib/leads/`, `app/actions.ts`)

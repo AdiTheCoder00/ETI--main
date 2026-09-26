@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { buildCsp } from "@/lib/csp";
 
 /**
  * Keeps the admin's Supabase session fresh (refreshed tokens are written back to
@@ -8,9 +9,18 @@ import { NextResponse, type NextRequest } from "next/server";
  * and server action verifies the admin again via lib/auth.ts.
  */
 export async function proxy(request: NextRequest) {
+  // Strict CSP for the lead inbox: a fresh nonce per request. Next.js reads it from the request's
+  // Content-Security-Policy header and tags its own scripts with it (see lib/csp.ts).
+  const csp = buildCsp({ nonce: Buffer.from(crypto.randomUUID()).toString("base64") });
+  request.headers.set("Content-Security-Policy", csp);
+  const withCsp = (res: NextResponse) => {
+    res.headers.set("Content-Security-Policy", csp);
+    return res;
+  };
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) return NextResponse.next(); // local mode, see lib/env.ts
+  if (!url || !anonKey) return withCsp(NextResponse.next({ request })); // local mode, see lib/env.ts
 
   let response = NextResponse.next({ request });
   const supabase = createServerClient(url, anonKey, {
@@ -31,9 +41,9 @@ export async function proxy(request: NextRequest) {
     const login = request.nextUrl.clone();
     login.pathname = "/admin/login";
     login.search = "";
-    return NextResponse.redirect(login);
+    return withCsp(NextResponse.redirect(login));
   }
-  return response;
+  return withCsp(response);
 }
 
 export const config = {

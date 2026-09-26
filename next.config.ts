@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { buildCsp } from "./lib/csp";
 
 const nextConfig: NextConfig = {
   // Pin the project root: a stray lockfile in a parent folder otherwise makes Next infer the wrong
@@ -15,8 +16,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // Baseline hardening for every response. No CSP yet: the loader, GSAP and Next's inline scripts
-        // need a nonce set-up to do it without breaking the page.
+        // Baseline hardening for every response.
         source: "/:path*",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
@@ -25,6 +25,12 @@ const nextConfig: NextConfig = {
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
         ],
+      },
+      {
+        // Content-Security-Policy for the public, prerendered pages. /admin gets a stricter, per-request
+        // nonce policy from proxy.ts instead (see lib/csp.ts for why the two differ).
+        source: "/:path((?!admin).*)",
+        headers: [{ key: "Content-Security-Policy", value: buildCsp() }],
       },
       {
         // Hero clip and poster. Not content-hashed, so cache for a day and revalidate in the

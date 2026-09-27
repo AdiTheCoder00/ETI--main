@@ -88,9 +88,9 @@ export default async function CasePage({ params }: PageProps<"/work/[slug]">) {
           </div>
         </dl>
 
-        {shot.note && <p className="case-note">{shot.note}</p>}
+        {shot.note && <p className="case-note" data-wipe>{shot.note}</p>}
 
-        <Link href={`/work/${next.slug}`} className="case-next">
+        <Link href={`/work/${next.slug}`} className="case-next" data-wipe>
           <span className="thumb">
             {next.image && <Image src={next.image} alt="" sizes="(min-width: 1024px) 220px, 140px" quality={90} />}
           </span>

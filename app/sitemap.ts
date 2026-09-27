@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL as site } from "@/lib/site";
 import { work } from "@/lib/work";
-
-const site = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
 
 // No lastModified: the flights carry no dates, and an invented one is worse than none.
 export default function sitemap(): MetadataRoute.Sitemap {

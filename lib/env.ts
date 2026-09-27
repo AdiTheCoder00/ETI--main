@@ -1,4 +1,5 @@
 import "server-only";
+import { SITE_URL } from "@/lib/site";
 
 /**
  * Server configuration. Everything backend-related is optional in development so the
@@ -39,7 +40,7 @@ export const mailConfig = () => ({
   /** Must be on a domain verified in Resend. */
   from: process.env.ENQUIRY_FROM_EMAIL ?? "ETI Drone Visuals <enquiries@etidronevisuals.com>",
   studioInbox: process.env.STUDIO_EMAIL ?? "contact@etidronevisuals.com",
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  siteUrl: SITE_URL,
 });
 
 export const turnstileSecret = () => process.env.TURNSTILE_SECRET_KEY ?? "";

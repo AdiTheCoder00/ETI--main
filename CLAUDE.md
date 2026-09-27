@@ -67,7 +67,8 @@ Site
   and note. There is no results section: the old site had none to carry over, so it was removed.
   Title, description, canonical and share image come from the same fields. Unknown slugs 404
   (`dynamicParams = false`). Every title on `/work` and the homepage reel links to its page (the whole card
-  is the link; the play button sits above it). `app/sitemap.ts` and `app/robots.ts` use `NEXT_PUBLIC_SITE_URL`.
+  is the link; the play button sits above it). `app/sitemap.ts`, `app/robots.ts`, `metadataBase` and the email inbox link all use `SITE_URL` from
+  `lib/site.ts`: `NEXT_PUBLIC_SITE_URL`, else Vercel's production domain, else localhost.
 - **Map of flown places** on `/work` (`components/PlacesMap.tsx`, data in `lib/places.ts`, Sept 2026): the old
   site's 16 projects, placed only as precisely as it named them. Cities and sites are dots; Gujarat, Madhya
   Pradesh, Narmada Valley and the Western Ghats are areas, not dots at a spot nobody named; the three flights

@@ -8,7 +8,8 @@ import * as THREE from "three";
 import type { DroneView, Sim, Target } from "./flight";
 
 function blurTexture() {
-  // motion-blurred two-blade prop: soft smears trailing each blade + a faint orange tip ring
+  // motion-blurred two-blade prop: soft smears trailing each blade + a faint orange tip ring.
+  // Light smears: the loader is always on black, where ink-coloured ones vanished and left bare rings.
   const s = 256;
   const cv = document.createElement("canvas");
   cv.width = cv.height = s;
@@ -19,7 +20,7 @@ function blurTexture() {
     for (let i = 0; i < 40; i++) {
       const a0 = b * Math.PI - i * 0.035;
       const alpha = 0.16 * Math.pow(1 - i / 40, 2);
-      g.strokeStyle = `rgba(22,21,15,${alpha})`;
+      g.strokeStyle = `rgba(238,234,225,${alpha})`;
       g.lineWidth = 12 - i * 0.2;
       g.lineCap = "round";
       g.beginPath();
@@ -28,7 +29,7 @@ function blurTexture() {
       g.stroke();
     }
   }
-  g.strokeStyle = "rgba(22,21,15,0.07)";
+  g.strokeStyle = "rgba(238,234,225,0.07)";
   g.lineWidth = c - 16;
   g.beginPath();
   g.arc(0, 0, (c - 8) / 2 + 4, 0, Math.PI * 2);

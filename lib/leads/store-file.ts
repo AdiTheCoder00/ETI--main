@@ -62,8 +62,11 @@ export function createFileLeadStore(file = path.join(process.cwd(), ".data", "le
 
     async list(filter) {
       const leads = await load();
+      // Leads are appended, so reversing first puts the later of two same-millisecond leads first:
+      // the sort is stable and a timestamp tie keeps that order.
       return leads
         .filter((l) => !filter?.status || l.status === filter.status)
+        .reverse()
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
         .map(strip);
     },

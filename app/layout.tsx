@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Archivo, Poppins, Source_Serif_4 } from "next/font/google";
 import "lenis/dist/lenis.css";
 import "./globals.css";
-import { baseOpenGraph } from "@/lib/site";
+import { SITE_URL, baseOpenGraph } from "@/lib/site";
 
 // Archivo's width axis gives the condensed (~72%) headline cut; Source Serif's
 // optical-size axis keeps body text readable at 16-21px.
@@ -29,7 +29,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(SITE_URL),
   title: "ETI Drone Visuals — Aerial film, inspection and survey",
   description:
     "Aerial cinematography, structural inspection and survey flights across India. DGCA-certified pilots based in Mumbai.",

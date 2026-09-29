@@ -456,8 +456,16 @@ export function SiteMotion() {
       // credentials: one line flown left to right across the strip
       wipe(".strip", "top 92%", "top 64%");
 
+      // work: the heading rises like every other section's
+      liftLines("#work-h", "#work");
+
       // work: pinned horizontal reel on desktop, plain grid everywhere else
       mm = gsap.matchMedia();
+      // below the pin the reel is a plain list, so each flight is wiped in as it arrives, the same
+      // way the cards on /work are
+      mm.add("(max-width: 1023px)", () => {
+        gsap.utils.toArray<HTMLElement>("#reel-track .shot, #reel-track .reel-end").forEach((el) => wipe(el, "top 94%", "top 72%"));
+      });
       mm.add("(min-width: 1024px)", () => {
         const sec = document.getElementById("work")!;
         const track = document.getElementById("reel-track")!;
@@ -512,6 +520,7 @@ export function SiteMotion() {
 
       // services: each job is written in, rule and all, as it reaches the reading line
       liftLines("#svc-h", "#services");
+      gsap.utils.toArray<HTMLElement>("#services .grp-h").forEach((h) => wipe(h, "top 90%", "top 70%"));
       gsap.utils.toArray<HTMLElement>("#services .rows li").forEach((li) => {
         wipe(li, "top 88%", "top 64%");
       });
@@ -533,8 +542,22 @@ export function SiteMotion() {
       // contact: the ask rises, then the details are written in under it
       liftLines("#contact-h", "#contact");
       wipe(".details", "top 88%", "top 64%");
+      // then the form is ruled in, field by field, each underline drawn left to right
+      gsap.utils.toArray<HTMLElement>("#enquiry > .f, #enquiry > .send").forEach((f) => wipe(f, "top 92%", "top 72%"));
 
       ScrollTrigger.refresh();
+
+      // Arriving with a hash (the "Tell us about the shoot" links on /work and the case pages go to
+      // /?intro=skip#contact): the browser jumped to the target before the reel was pinned, and the
+      // pin adds the reel's whole scroll length above it, so that jump now lands mid-reel. Re-anchor
+      // once, now that everything is measured.
+      const target = window.location.hash.length > 1 ? document.getElementById(decodeURIComponent(window.location.hash.slice(1))) : null;
+      if (target && target.id !== "top") {
+        // Lenis caches the scroll limit; without a resize it clamps to the pre-pin page height
+        lenis.resize();
+        lenis.scrollTo(target, { offset: -navHeight(), immediate: true, force: true });
+        ScrollTrigger.update();
+      }
     }
 
     return () => {

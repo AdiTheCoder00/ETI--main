@@ -1,8 +1,6 @@
 import { z } from "zod";
 import { JOB_TYPES, type EnquiryField } from "./constants";
 
-export { JOB_TYPES } from "./constants";
-
 export const LEAD_STATUSES = ["new", "quoted", "won", "lost"] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
 
@@ -40,7 +38,6 @@ export const enquirySchema = z.object({
   msg: trimmed(5000).default(""),
 });
 
-export type EnquiryInput = z.infer<typeof enquirySchema>;
 export type { EnquiryField };
 
 export const statusSchema = z.enum(LEAD_STATUSES);

@@ -60,7 +60,7 @@ export function PlacesMap() {
       <div className="places-side">
         <ol className="places-list">
           {places.map((p) => (
-            <li key={p.id} className={active === p.id ? "is-on" : undefined} onMouseEnter={on(p.id)} onMouseLeave={off} onFocus={on(p.id)} onBlur={off}>
+            <li key={p.id} data-wipe className={active === p.id ? "is-on" : undefined} onMouseEnter={on(p.id)} onMouseLeave={off} onFocus={on(p.id)} onBlur={off}>
               <span className="pl-name">{p.name}</span>
               <ul>
                 {flightsAt(p).map((f) => (

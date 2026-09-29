@@ -67,7 +67,8 @@ Site
   and note. There is no results section: the old site had none to carry over, so it was removed.
   Title, description, canonical and share image come from the same fields. Unknown slugs 404
   (`dynamicParams = false`). Every title on `/work` and the homepage reel links to its page (the whole card
-  is the link; the play button sits above it). `app/sitemap.ts` and `app/robots.ts` use `NEXT_PUBLIC_SITE_URL`.
+  is the link; the play button sits above it). `app/sitemap.ts`, `app/robots.ts`, `metadataBase` and the email inbox link all use `SITE_URL` from
+  `lib/site.ts`: `NEXT_PUBLIC_SITE_URL`, else Vercel's production domain, else localhost.
 - **Map of flown places** on `/work` (`components/PlacesMap.tsx`, data in `lib/places.ts`, Sept 2026): the old
   site's 16 projects, placed only as precisely as it named them. Cities and sites are dots; Gujarat, Madhya
   Pradesh, Narmada Valley and the Western Ghats are areas, not dots at a spot nobody named; the three flights
@@ -86,8 +87,10 @@ Site
   `app/opengraph-image.jpg` (case pages use their own still). Sources for the board and the share image are
   in `brand/` (`brand-kit.html`, `og.html`), rendered with headless Edge.
 - **Hardening and accessibility (Sept 2026 audit).** `next.config.ts` sends nosniff, Referrer-Policy,
-  X-Frame-Options DENY, Permissions-Policy and HSTS on every response, and no X-Powered-By; there is no CSP
-  yet (the loader, GSAP and Next's inline scripts need nonces first). A skip link in the root layout targets
+  X-Frame-Options DENY, Permissions-Policy and HSTS on every response, and no X-Powered-By. The
+  Content-Security-Policy is built in `lib/csp.ts`: public pages allow inline scripts (they are prerendered,
+  so they can't carry a per-request nonce), `/admin` gets a per-request nonce with 'strict-dynamic' from
+  `proxy.ts`. A skip link in the root layout targets
   `id="main"`, so every page's `<main>` must carry that id. On the desktop reel, keyboard focus scrolls the
   page to the focused card (the browser can't: the reel only moves with vertical scroll). The contact action
   resolves the lead store lazily inside `handleEnquiry`'s error handling, so a store failure shows the form's
@@ -123,12 +126,23 @@ Checks: `npm run lint`, `npm run typecheck`, `npm test` (vitest, `tests/`), `npm
   numbering on non-sequences, fade-up-on-every-section animations, round-number stat counters.
 - The page is scroll-driven (Sept 2026, owner's call): every section is uncovered by the scroll itself, so
   the whole page reads as one descent. The vocabulary is fixed — left-to-right clip wipes (strip, service
-  rows, kit, contact details), lines rising out of their own mask (section headings, via SplitText),
+  group rules and rows, kit, contact details, each contact form field; below 1024px each reel card; on
+  `/work` each row of the places list; on case pages the note and the next-flight link), lines rising out
+  of their own mask (every section heading including "Recent work", via SplitText),
   parallax inside a crop (hero video, studio photo), and the pinned horizontal reel. (The side altimeter
   drone was removed at the owner's request, Sept 2026; don't bring it back.) Reveals are scrubbed, never triggered-and-played,
   so scrolling back up puts them back. Initial hidden states are set from JS only, never in CSS, so
   no-JS and reduced-motion get the plain page. Reuse those moves rather than inventing new ones;
-  fade-up-on-scroll stays banned. The admin has none.
+  fade-up-on-scroll stays banned. The admin has none. A finished wipe swaps its clip for one that bleeds
+  8px past the box (`wipe()` in `lib/motion/reveal.ts`): a plain inset(0) clip also cut off the keyboard
+  focus outline of any link or field inside it. Keyboard focus landing in a part-wiped block opens it at
+  once (the browser scrolls a focused field only just into view, below where its wipe runs). After the scroll effects are measured, `SiteMotion`
+  re-anchors to the URL hash once: the browser's own jump happens before the reel is pinned, and the pin
+  adds the reel's whole scroll length above `#contact`, so "Tell us about the shoot" from `/work` and the
+  case pages used to land mid-reel. `lenis.resize()` must come first or Lenis clamps to the old height.
+- The loader sits on black (#0b0b0b) in both themes, so `#loader` sets its own light-on-dark tokens (the
+  dark theme's ink, muted, accent) and the prop blur texture in `drone3d.ts` is drawn light. Before that the
+  wordmark was dark ink on black and the propellers showed as bare orange rings.
 - The loader: GSAP animates an invisible target; the drone chases it with a damped spring (x, y and depth z)
   and leans from its own acceleration. Timelines are advanced manually inside the same rAF loop as the physics.
   Sequence (Sept 2026, owner's idea): the drone flies in from the left, turns to face the viewer (yaw -90, gimbal

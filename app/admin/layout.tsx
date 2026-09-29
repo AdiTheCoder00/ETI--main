@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import "./admin.css";
 
-// Per-request: reads the session and live lead data.
+// Per-request: reads the session and live data.
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Lead inbox — ETI Drone Visuals",
+  title: "Admin — ETI Drone Visuals",
   robots: { index: false, follow: false },
 };
 

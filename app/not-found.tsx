@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
+import { getSiteSettings } from "@/lib/content/public";
 
 export const metadata: Metadata = {
   title: "Page not found — ETI Drone Visuals",
 };
 
-export default function NotFound() {
+export default async function NotFound() {
+  const settings = await getSiteSettings();
   return (
     <>
       <Nav />
@@ -22,7 +24,7 @@ export default function NotFound() {
             Go to the homepage
           </Link>
         </div>
-        <Footer />
+        <Footer settings={settings} />
       </main>
     </>
   );

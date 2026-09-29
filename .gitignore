@@ -50,3 +50,6 @@ next-env.d.ts
 
 # original masters for scripts/footage.mjs: large, and not ours to publish as-is
 /footage/
+
+# admin uploads in local mode (lib/uploads.ts): referenced only from the local .data store
+/public/media/uploads/

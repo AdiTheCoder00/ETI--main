@@ -1,24 +1,23 @@
 import type { StaticImageData } from "next/image";
-import plantChimneys from "@/assets/work/plant-chimneys.jpg";
-import metroHighway from "@/assets/work/metro-highway.jpg";
-import hillTemple from "@/assets/work/hill-temple.jpg";
-import plantConveyor from "@/assets/work/plant-conveyor.jpg";
-import trainDepot from "@/assets/work/train-depot.jpg";
-import riverBirds from "@/assets/work/river-birds.jpg";
-import metroStation from "@/assets/work/metro-station.jpg";
-import highriseTowers from "@/assets/work/highrise-towers.jpg";
-import riverSunset from "@/assets/work/river-sunset.jpg";
-import plantFpv from "@/assets/work/plant-fpv.jpg";
-import plantStructure from "@/assets/work/plant-structure.jpg";
-import nightHighway from "@/assets/work/night-highway.jpg";
 
-/** Clips live outside the repo: locally in public/media/clips, on a CDN in production. */
-const clipBase = process.env.NEXT_PUBLIC_CLIPS_BASE_URL ?? "/media/clips";
+/**
+ * Flights: the types and the few helpers the browser needs. Kept free of zod and of the flight data on
+ * purpose, because the gallery and the reel import this in the browser (see lib/leads/constants.ts for
+ * what shipping zod cost). The form schema and the launch flights live in lib/content/.
+ */
+
+/** Clips live outside the repo: locally in public/media/clips, on a CDN in production. `||`: empty means unset. */
+const clipBase = process.env.NEXT_PUBLIC_CLIPS_BASE_URL || "/media/clips";
 
 export const CATEGORIES = ["Industrial", "Urban and transit", "Scenic and heritage", "Construction"] as const;
 export type Category = (typeof CATEGORIES)[number];
 
-export type Shot = {
+/**
+ * A flight as it is stored, and edited at /admin/work. Empty strings mean "none" throughout.
+ * Supabase in production, .data/flights.json locally (lib/content/).
+ */
+export type Flight = {
+  id: string;
   /** URL of its case page, /work/[slug]. Keep stable once published: it is what search engines index. */
   slug: string;
   title: string;
@@ -26,173 +25,59 @@ export type Shot = {
   category: Category;
   /** What it was flown and finished on. Straight from the job sheet, no invented specs. */
   kit: string;
-  image?: StaticImageData;
   alt: string;
-  /** File name in the clip store. Four of the old site's clips are gone from its server. */
-  clip?: string;
+  note: string;
+  /** A bundled still by file name ("plant-fpv.jpg", lib/stills.ts) or an uploaded one's URL. */
+  still: string;
+  /** Uploaded stills only: their size and a tiny blur placeholder, recorded in the browser at upload. */
+  stillWidth: number;
+  stillHeight: number;
+  stillBlur: string;
+  /** A file name in the clip store (NEXT_PUBLIC_CLIPS_BASE_URL), a /media path, or an uploaded URL. */
+  clip: string;
   /** Wide frames take more of the horizontal reel. */
-  wide?: boolean;
-  note?: string;
-  /** Position in the homepage reel; left out for the ones that only appear on /work. */
-  reel?: number;
+  wide: boolean;
+  onHomepage: boolean;
+  /** Hidden flights stay in the admin but appear nowhere on the site. */
+  visible: boolean;
+  position: number;
 };
 
-export function clipUrl(file: string) {
-  return `${clipBase}/${file}`;
+/** A flight as the public pages render it: the still resolved to something next/image can take. */
+export type Shot = {
+  id: string;
+  slug: string;
+  title: string;
+  location: string;
+  category: Category;
+  kit: string;
+  image?: StaticImageData;
+  alt: string;
+  clip?: string;
+  wide?: boolean;
+  note?: string;
+  onHomepage: boolean;
+};
+
+export function clipUrl(clip: string) {
+  return clip.startsWith("/") || clip.startsWith("https://") ? clip : `${clipBase}/${clip}`;
 }
 
-export const work: Shot[] = [
-  {
-    slug: "chimney-stack-audit",
-    title: "Chimney stack audit",
-    location: "Power station, Madhya Pradesh",
-    category: "Industrial",
-    kit: "Thermal and 4K",
-    image: plantChimneys,
-    clip: "plant-chimneys.mp4",
-    alt: "Drone view down the side of a concrete chimney stack beside a river and expressway",
-    wide: true,
-    note: "Full-height visual and thermal pass of the stack, no scaffolding.",
-    reel: 1,
-  },
-  {
-    slug: "metro-viaduct-tracking",
-    title: "Metro viaduct tracking",
-    location: "Bengaluru",
-    category: "Urban and transit",
-    kit: "4K",
-    image: metroHighway,
-    clip: "metro-highway.mp4",
-    alt: "Top-down view of a metro viaduct running above a busy highway",
-    reel: 2,
-  },
-  {
-    slug: "hill-temple",
-    title: "Hill temple",
-    location: "Western Ghats",
-    category: "Scenic and heritage",
-    kit: "6K",
-    image: hillTemple,
-    clip: "hill-temple.mp4",
-    alt: "Aerial view of a hilltop temple roof with mountains behind",
-    note: "Slow rising reveal for a heritage documentary.",
-    reel: 3,
-  },
-  {
-    slug: "conveyor-line-survey",
-    title: "Conveyor line survey",
-    location: "Mineral processing unit",
-    category: "Industrial",
-    kit: "4K",
-    image: plantConveyor,
-    clip: "plant-conveyor.mp4",
-    alt: "Looking down on rusted conveyor housings running through overgrown ground",
-    wide: true,
-    reel: 4,
-  },
-  {
-    slug: "rail-yard-mapping",
-    title: "Rail yard mapping",
-    location: "Northern Railway hub",
-    category: "Urban and transit",
-    kit: "4K",
-    image: trainDepot,
-    clip: "train-depot.mp4",
-    alt: "Overhead view of a rail yard with long depot sheds and parallel tracks",
-    reel: 5,
-  },
-  {
-    slug: "wetland-sanctuary",
-    title: "Wetland sanctuary",
-    location: "Chilika Lagoon",
-    category: "Scenic and heritage",
-    kit: "4K, telephoto",
-    image: riverBirds,
-    clip: "river-birds.mp4",
-    alt: "Two birds flying low over still brown water",
-    reel: 6,
-  },
-  {
-    slug: "terminal-orbit",
-    title: "Terminal orbit",
-    location: "Nagpur",
-    category: "Urban and transit",
-    kit: "4K",
-    image: metroStation,
-    clip: "metro-station.mp4",
-    alt: "Transit terminal roof covered in solar panels next to a large parking lot",
-    wide: true,
-    reel: 7,
-  },
-  {
-    slug: "tower-progress-survey",
-    title: "Tower progress survey",
-    location: "BKC, Mumbai",
-    category: "Construction",
-    kit: "4K",
-    image: highriseTowers,
-    clip: "highrise-towers.mp4",
-    alt: "Residential towers and a tower crane under an overcast sky",
-    reel: 8,
-  },
-  {
-    slug: "fpv-flythrough",
-    title: "FPV flythrough",
-    location: "Steel complex, Gujarat",
-    category: "Industrial",
-    kit: "7-inch FPV, 6K",
-    image: plantFpv,
-    clip: "plant-fpv.mp4",
-    alt: "FPV flight through rusted steelwork inside an industrial plant",
-    reel: 9,
-  },
-  {
-    slug: "structural-steelwork-survey",
-    title: "Structural steelwork survey",
-    location: "Petrochem refinery",
-    category: "Industrial",
-    kit: "5.2K ProRes",
-    image: plantStructure,
-    clip: "plant-structure.mp4",
-    alt: "Steel pipework and structural framing across a refinery seen from above",
-    wide: true,
-    reel: 10,
-  },
-  {
-    slug: "expressway-at-night",
-    title: "Expressway at night",
-    location: "Delhi NCR",
-    category: "Urban and transit",
-    kit: "4K, night",
-    image: nightHighway,
-    clip: "night-highway.mp4",
-    alt: "Expressway running to the horizon at night, lit by moving traffic",
-    reel: 11,
-  },
-  {
-    slug: "river-basin-delta",
-    title: "River basin delta",
-    location: "Narmada Valley",
-    category: "Scenic and heritage",
-    kit: "6K",
-    image: riverSunset,
-    clip: "river-sunset.mp4",
-    alt: "Sunset over a wide river delta with green banks",
-    reel: 12,
-  },
-];
-
-/** The homepage reel: every flight, in reel order. */
-export const shots = work
-  .filter((s): s is Shot & { reel: number } => s.reel !== undefined)
-  .sort((a, b) => a.reel - b.reel);
-
-export function shotBySlug(slug: string) {
-  return work.find((s) => s.slug === slug);
+/** A case page slug from a title: "Chimney stack audit" → "chimney-stack-audit". */
+export function slugify(title: string) {
+  return title
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80)
+    .replace(/-+$/, "");
 }
 
-/** The flight after this one on /work, wrapping round, so every case page links on to another. */
-export function nextShot(slug: string) {
-  const i = work.findIndex((s) => s.slug === slug);
-  return work[(i + 1) % work.length];
+/** The flight after this one, wrapping round, so every case page links on to another. */
+export function nextShot(shots: Shot[], slug: string): Shot | undefined {
+  if (shots.length < 2) return undefined;
+  const i = shots.findIndex((s) => s.slug === slug);
+  return shots[(i + 1) % shots.length];
 }

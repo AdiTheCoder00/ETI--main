@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { INDIA_PATH, INDIA_VIEWBOX, project } from "@/lib/map/india";
-import { flightsAt, places, unplaced } from "@/lib/places";
+import { resolvePlaces, unplaced as unplacedOf, type MapShot } from "@/lib/places";
 
 const WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
 
@@ -12,10 +12,12 @@ const WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eig
  * the map mirrors it for the eye, and hovering either one lights up its partner. Map markers are
  * mouse-only shortcuts to the same case pages, so they are hidden from assistive tech and the tab order.
  */
-export function PlacesMap() {
+export function PlacesMap({ shots }: { shots: MapShot[] }) {
   const [active, setActive] = useState<string | null>(null);
   const on = (id: string) => () => setActive(id);
   const off = () => setActive(null);
+  const places = resolvePlaces(shots);
+  const unplaced = unplacedOf(shots);
 
   return (
     <div className="places-body">
@@ -24,7 +26,7 @@ export function PlacesMap() {
           <path className="land" d={INDIA_PATH} />
           {places.map((p) => {
             const [x, y] = project(p.lon, p.lat);
-            const slug = flightsAt(p).find((f) => f.shot)?.shot?.slug;
+            const slug = p.resolved.find((f) => f.shot)?.shot?.slug;
             const pin = (
               <g
                 className={`pin ${p.kind}${active === p.id ? " is-on" : ""}`}
@@ -63,7 +65,7 @@ export function PlacesMap() {
             <li key={p.id} data-wipe className={active === p.id ? "is-on" : undefined} onMouseEnter={on(p.id)} onMouseLeave={off} onFocus={on(p.id)} onBlur={off}>
               <span className="pl-name">{p.name}</span>
               <ul>
-                {flightsAt(p).map((f) => (
+                {p.resolved.map((f) => (
                   <li key={f.title}>
                     {f.shot ? (
                       <Link href={`/work/${f.shot.slug}`}>{f.title}</Link>

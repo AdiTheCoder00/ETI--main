@@ -1,4 +1,4 @@
-import { work, type Shot } from "./work";
+import type { Shot } from "./work";
 
 /**
  * Where the studio has flown, for the map on /work. Taken from the old site's project list: the twelve
@@ -35,17 +35,32 @@ export const places: Place[] = [
   { id: "bengaluru", name: "Bengaluru", kind: "place", lon: 77.59, lat: 12.97, flights: [{ slug: "metro-viaduct-tracking" }] },
 ];
 
-export type PlacedFlight = { title: string; shot?: Shot };
+/** Launch flights whose job sheets name no place: a refinery, a processing unit, a railway hub. */
+export const NO_PLACE = ["conveyor-line-survey", "rail-yard-mapping", "structural-steelwork-survey"];
 
-/** A place's flights resolved against lib/work.ts, so titles on the map never drift from the case pages. */
-export function flightsAt(p: Place): PlacedFlight[] {
-  return p.flights.map((f) => {
-    if ("title" in f) return { title: f.title };
-    const shot = work.find((s) => s.slug === f.slug);
-    if (!shot) throw new Error(`places.ts: no flight with slug "${f.slug}" in lib/work.ts`);
-    return { title: shot.title, shot };
-  });
+/** All the map needs of a flight. */
+export type MapShot = Pick<Shot, "slug" | "title">;
+export type PlacedFlight = { title: string; shot?: MapShot };
+export type ResolvedPlace = Place & { resolved: PlacedFlight[] };
+
+/**
+ * Places resolved against the flights on the site right now, so titles on the map never drift from the
+ * case pages. Flights are edited in the admin, so a mapped one may be hidden or deleted: it simply drops
+ * off, and a place left with nothing under it drops off the map rather than stay as an empty dot.
+ * A flight added in the admin isn't on the map until someone places it here.
+ */
+export function resolvePlaces(shots: MapShot[]): ResolvedPlace[] {
+  return places
+    .map((p) => ({
+      ...p,
+      resolved: p.flights.flatMap((f): PlacedFlight[] => {
+        if ("title" in f) return [{ title: f.title }];
+        const shot = shots.find((s) => s.slug === f.slug);
+        return shot ? [{ title: shot.title, shot }] : [];
+      }),
+    }))
+    .filter((p) => p.resolved.length > 0);
 }
 
 /** Flights on the site that name no place, so the page can say so rather than leave them unexplained. */
-export const unplaced = work.filter((s) => !places.some((p) => p.flights.some((f) => "slug" in f && f.slug === s.slug)));
+export const unplaced = (shots: MapShot[]) => shots.filter((s) => NO_PLACE.includes(s.slug));

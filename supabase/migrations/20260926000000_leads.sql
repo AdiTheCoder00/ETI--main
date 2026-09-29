@@ -23,8 +23,9 @@ create index leads_created_at_idx on public.leads (created_at desc);
 create index leads_status_created_at_idx on public.leads (status, created_at desc);
 create index leads_ip_hash_created_at_idx on public.leads (ip_hash, created_at desc) where ip_hash is not null;
 
+-- search_path pinned so the function can't be pointed at a shadowing object (Supabase advisor 0011)
 create function public.leads_touch_updated_at() returns trigger
-language plpgsql as $$
+language plpgsql set search_path = '' as $$
 begin
   new.updated_at = now();
   return new;

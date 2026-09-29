@@ -3,6 +3,7 @@ import { JOB_TYPES, type EnquiryField } from "./constants";
 
 export const LEAD_STATUSES = ["new", "quoted", "won", "lost"] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
+export const STATUS_LABELS: Record<LeadStatus, string> = { new: "New", quoted: "Quoted", won: "Won", lost: "Lost" };
 
 export type Lead = {
   id: string;
@@ -15,6 +16,8 @@ export type Lead = {
   message: string;
   status: LeadStatus;
   source: string;
+  /** Private to the studio, written in the inbox. Never shown to the client or emailed. */
+  notes: string;
 };
 
 export type NewLead = Pick<Lead, "name" | "email" | "jobType" | "whereWhen" | "message" | "source"> & {
@@ -41,3 +44,19 @@ export const enquirySchema = z.object({
 export type { EnquiryField };
 
 export const statusSchema = z.enum(LEAD_STATUSES);
+
+export const NOTES_MAX = 5000;
+export const notesSchema = z.string().max(NOTES_MAX, `Keep notes under ${NOTES_MAX} characters.`);
+
+/**
+ * The inbox search box. The Supabase store puts this inside a double-quoted PostgREST value,
+ * where only `"` and `\` can break out of the quotes, and `*` is PostgREST's wildcard; those
+ * three are dropped. `%` and `_` stay: at worst they widen a match, and emails contain `_`.
+ */
+export function normaliseQuery(raw: unknown): string {
+  if (typeof raw !== "string") return "";
+  return raw.replace(/["\\*]/g, " ").replace(/\s+/g, " ").trim().slice(0, 100);
+}
+
+/** The columns search looks in, as Lead fields. */
+export const SEARCH_FIELDS = ["name", "email", "jobType", "whereWhen", "message", "notes"] as const;

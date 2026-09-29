@@ -2,7 +2,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { LEAD_STATUSES, type Lead, type LeadStatus } from "./schema";
+import { LEAD_STATUSES, SEARCH_FIELDS, type Lead, type LeadStatus } from "./schema";
 import type { LeadStore } from "./store";
 
 type StoredLead = Lead & { ipHash: string | null; userAgent: string | null };
@@ -16,7 +16,8 @@ export function createFileLeadStore(file = path.join(process.cwd(), ".data", "le
 
   async function load(): Promise<StoredLead[]> {
     try {
-      return JSON.parse(await readFile(file, "utf8")) as StoredLead[];
+      // leads saved before notes existed have no notes field
+      return (JSON.parse(await readFile(file, "utf8")) as StoredLead[]).map((l) => ({ ...l, notes: l.notes ?? "" }));
     } catch (e) {
       if ((e as NodeJS.ErrnoException).code === "ENOENT") return [];
       throw e;
@@ -37,6 +38,23 @@ export function createFileLeadStore(file = path.join(process.cwd(), ".data", "le
     return run;
   }
 
+  /** Change one lead in place; false when it doesn't exist. */
+  const update = (id: string, patch: (lead: StoredLead) => void) =>
+    locked(async () => {
+      const leads = await load();
+      const lead = leads.find((l) => l.id === id);
+      if (!lead) return false;
+      patch(lead);
+      lead.updatedAt = new Date().toISOString();
+      await save(leads);
+      return true;
+    });
+
+  const matches = (lead: Lead, q: string) => {
+    const needle = q.toLowerCase();
+    return SEARCH_FIELDS.some((f) => lead[f].toLowerCase().includes(needle));
+  };
+
   const strip = (stored: StoredLead): Lead => {
     const { ipHash, userAgent, ...lead } = stored;
     void ipHash;
@@ -49,7 +67,7 @@ export function createFileLeadStore(file = path.join(process.cwd(), ".data", "le
       locked(async () => {
         const leads = await load();
         const now = new Date().toISOString();
-        const lead: StoredLead = { id: randomUUID(), createdAt: now, updatedAt: now, status: "new", ...input };
+        const lead: StoredLead = { id: randomUUID(), createdAt: now, updatedAt: now, status: "new", notes: "", ...input };
         leads.push(lead);
         await save(leads);
         return strip(lead);
@@ -66,9 +84,15 @@ export function createFileLeadStore(file = path.join(process.cwd(), ".data", "le
       // the sort is stable and a timestamp tie keeps that order.
       return leads
         .filter((l) => !filter?.status || l.status === filter.status)
+        .filter((l) => !filter?.q || matches(l, filter.q))
         .reverse()
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .slice(0, filter?.limit ?? 500)
         .map(strip);
+    },
+
+    async statRows() {
+      return (await load()).map(({ createdAt, jobType, status }) => ({ createdAt, jobType, status }));
     },
 
     async countByStatus() {
@@ -79,12 +103,21 @@ export function createFileLeadStore(file = path.join(process.cwd(), ".data", "le
     },
 
     setStatus: (id, status) =>
+      update(id, (lead) => {
+        lead.status = status;
+      }),
+
+    setNotes: (id, notes) =>
+      update(id, (lead) => {
+        lead.notes = notes;
+      }),
+
+    remove: (id) =>
       locked(async () => {
         const leads = await load();
-        const lead = leads.find((l) => l.id === id);
-        if (!lead) return false;
-        lead.status = status;
-        lead.updatedAt = new Date().toISOString();
+        const i = leads.findIndex((l) => l.id === id);
+        if (i < 0) return false;
+        leads.splice(i, 1);
         await save(leads);
         return true;
       }),

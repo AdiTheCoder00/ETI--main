@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
     // softened them. AVIF first: sharper than WebP at the same size.
     formats: ["image/avif", "image/webp"],
     qualities: [90],
+    // Stills uploaded from /admin/work live in Vercel Blob. Public stores only, and only the work/
+    // folder the upload route writes to; lib/content/flight-schema.ts refuses any other host on save.
+    remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com", pathname: "/work/**" }],
   },
   // Don't advertise the framework in every response.
   poweredByHeader: false,

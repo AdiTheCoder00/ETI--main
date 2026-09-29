@@ -6,15 +6,20 @@ import { CaseClip } from "@/components/CaseClip";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 import { PageScroll } from "@/components/PageScroll";
+import { getPublishedShot, getPublishedShots, getSiteSettings } from "@/lib/content/public";
 import { baseOpenGraph } from "@/lib/site";
-import { clipUrl, nextShot, shotBySlug, work, type Shot } from "@/lib/work";
+import { clipUrl, nextShot, type Shot } from "@/lib/work";
 
-// One page per flight, all built at build time. A slug that isn't in lib/work.ts is a 404, not a
-// page rendered on demand.
-export const dynamicParams = false;
+// One static page per flight. The flights on the site at build time are prerendered; one added in the
+// admin afterwards is rendered on its first visit and cached from then on (dynamicParams), so it
+// needs no redeploy. A slug that matches no visible flight is a 404. Admin saves regenerate these
+// (refreshPublicPages); the hourly revalidate is a backstop for edits made in the Supabase dashboard.
+export const dynamic = "force-static";
+export const dynamicParams = true;
+export const revalidate = 3600;
 
-export function generateStaticParams() {
-  return work.map((s) => ({ slug: s.slug }));
+export async function generateStaticParams() {
+  return (await getPublishedShots()).map((s) => ({ slug: s.slug }));
 }
 
 /** Built from the job sheet fields only, so it never says more than the page does. */
@@ -24,7 +29,7 @@ function describe(s: Shot) {
 }
 
 export async function generateMetadata({ params }: PageProps<"/work/[slug]">): Promise<Metadata> {
-  const shot = shotBySlug((await params).slug);
+  const shot = await getPublishedShot((await params).slug);
   if (!shot) return {};
   const title = `${shot.title}, ${shot.location} — ETI Drone Visuals`;
   const description = describe(shot);
@@ -39,9 +44,10 @@ export async function generateMetadata({ params }: PageProps<"/work/[slug]">): P
 }
 
 export default async function CasePage({ params }: PageProps<"/work/[slug]">) {
-  const shot = shotBySlug((await params).slug);
+  const { slug } = await params;
+  const [shot, shots, settings] = await Promise.all([getPublishedShot(slug), getPublishedShots(), getSiteSettings()]);
   if (!shot) notFound();
-  const next = nextShot(shot.slug);
+  const next = nextShot(shots, shot.slug);
 
   return (
     <>
@@ -90,16 +96,19 @@ export default async function CasePage({ params }: PageProps<"/work/[slug]">) {
 
         {shot.note && <p className="case-note" data-wipe>{shot.note}</p>}
 
-        <Link href={`/work/${next.slug}`} className="case-next" data-wipe>
-          <span className="thumb">
-            {next.image && <Image src={next.image} alt="" sizes="(min-width: 1024px) 220px, 140px" quality={90} />}
-          </span>
-          <span>
-            <small>Next flight</small>
-            <b>{next.title}</b>
-            <span className="loc">{next.location}</span>
-          </span>
-        </Link>
+        {/* Only one flight left on the site: there is no next one to point at. */}
+        {next && (
+          <Link href={`/work/${next.slug}`} className="case-next" data-wipe>
+            <span className="thumb">
+              {next.image && <Image src={next.image} alt="" sizes="(min-width: 1024px) 220px, 140px" quality={90} />}
+            </span>
+            <span>
+              <small>Next flight</small>
+              <b>{next.title}</b>
+              <span className="loc">{next.location}</span>
+            </span>
+          </Link>
+        )}
 
         <div className="gal-ask">
           <h2 className="display h2" data-lift>
@@ -110,7 +119,7 @@ export default async function CasePage({ params }: PageProps<"/work/[slug]">) {
           </Link>
         </div>
 
-        <Footer />
+        <Footer settings={settings} />
       </main>
     </>
   );

@@ -7,12 +7,19 @@ import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 import { ReelShot } from "@/components/ReelShot";
 import { SiteMotion } from "@/components/SiteMotion";
-import { shots } from "@/lib/work";
+import { getReelShots, getSiteSettings } from "@/lib/content/public";
+import { telHref, whatsappHref } from "@/lib/settings";
 import studioImg from "@/assets/work/river-sunset.jpg";
 
 // Override with a CDN URL (e.g. Cloudflare Stream, Mux, Vercel Blob) once the reel grows.
-const heroVideo = process.env.NEXT_PUBLIC_HERO_VIDEO_URL ?? "/media/hero.mp4";
-const heroPoster = process.env.NEXT_PUBLIC_HERO_POSTER_URL ?? "/media/hero-poster.jpg";
+// || not ??: .env.example lists these empty, and a copied empty value must still mean "use the default".
+const heroVideo = process.env.NEXT_PUBLIC_HERO_VIDEO_URL || "/media/hero.mp4";
+const heroPoster = process.env.NEXT_PUBLIC_HERO_POSTER_URL || "/media/hero-poster.jpg";
+
+// Static, regenerated when the admin saves (refreshPublicPages) and hourly as a backstop for edits made
+// straight in the Supabase dashboard. force-static pins it so a data library can't make it dynamic.
+export const dynamic = "force-static";
+export const revalidate = 3600;
 
 // No searchParams here on purpose: reading them would opt the whole page out of static
 // rendering for one optional flag that SiteMotion reads from the URL on the client anyway.
@@ -20,7 +27,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-export default function Home() {
+export default async function Home() {
+  const [shots, settings] = await Promise.all([getReelShots(), getSiteSettings()]);
   // The poster is the first thing on screen (and the largest paint): fetch it before the scripts.
   preload(heroPoster, { as: "image", fetchPriority: "high" });
 
@@ -39,7 +47,8 @@ export default function Home() {
           {/* The headline gets the full width so it reads in two lines, not six down a narrow column. */}
           <div className="hero-head">
             <div className="hero-kicker" data-hero-fade>
-              Based in Mumbai, flying across India
+              {/* The year only once the owner has given one at /admin/site: the old site never stated it. */}
+              Based in Mumbai, flying across India{settings.foundedYear && ` since ${settings.foundedYear}`}
             </div>
             <h1 className="display" id="hero-title">
               We fly cameras where cranes and helicopters can’t go.
@@ -227,18 +236,33 @@ export default function Home() {
               <div>
                 <dt>Email</dt>
                 <dd>
-                  <a href="mailto:contact@etidronevisuals.com" style={{ textUnderlineOffset: 5 }}>
-                    contact@etidronevisuals.com
+                  <a href={`mailto:${settings.email}`} style={{ textUnderlineOffset: 5 }}>
+                    {settings.email}
                   </a>
                 </dd>
               </div>
-              <div>
-                <dt>Project enquiries</dt>
-                <dd>By email, or the form on this page</dd>
-              </div>
+              {settings.phone ? (
+                <div>
+                  <dt>Phone or WhatsApp</dt>
+                  <dd>
+                    <a href={telHref(settings.phone)} style={{ textUnderlineOffset: 5 }}>
+                      {settings.phone}
+                    </a>
+                    {" · "}
+                    <a href={whatsappHref(settings.phone)} target="_blank" rel="noopener" style={{ textUnderlineOffset: 5 }}>
+                      WhatsApp
+                    </a>
+                  </dd>
+                </div>
+              ) : (
+                <div>
+                  <dt>Project enquiries</dt>
+                  <dd>By email, or the form on this page</dd>
+                </div>
+              )}
               <div>
                 <dt>Office</dt>
-                <dd>Mumbai, India</dd>
+                <dd>{settings.office}</dd>
               </div>
             </dl>
           </div>
@@ -246,7 +270,7 @@ export default function Home() {
         </section>
 
         <div className="wrap">
-          <Footer />
+          <Footer settings={settings} />
         </div>
       </main>
     </>

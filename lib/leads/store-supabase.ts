@@ -14,9 +14,15 @@ type LeadRow = {
   message: string;
   status: LeadStatus;
   source: string;
+  notes: string;
 };
 
-const COLUMNS = "id, created_at, updated_at, name, email, job_type, where_when, message, status, source";
+const COLUMNS = "id, created_at, updated_at, name, email, job_type, where_when, message, status, source, notes";
+
+const SEARCH_COLUMNS = ["name", "email", "job_type", "where_when", "message", "notes"];
+
+// Supabase rejects a malformed uuid with an error; an unknown lead should read as "not found".
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const toLead = (r: LeadRow): Lead => ({
   id: r.id,
@@ -29,6 +35,7 @@ const toLead = (r: LeadRow): Lead => ({
   message: r.message,
   status: r.status,
   source: r.source,
+  notes: r.notes,
 });
 
 /**
@@ -69,8 +76,10 @@ export function createSupabaseLeadStore(): LeadStore {
     },
 
     async list(filter) {
-      let q = db.from("leads").select(COLUMNS).order("created_at", { ascending: false }).limit(500);
+      let q = db.from("leads").select(COLUMNS).order("created_at", { ascending: false }).limit(filter?.limit ?? 500);
       if (filter?.status) q = q.eq("status", filter.status);
+      // filter.q is normalised (no `"`, `\` or `*`), so it cannot leave the quoted value
+      if (filter?.q) q = q.or(SEARCH_COLUMNS.map((c) => `${c}.ilike."*${filter.q}*"`).join(","));
       const { data, error } = await q.returns<LeadRow[]>();
       if (error) throw new Error(`Loading leads failed: ${error.message}`);
       return data.map(toLead);
@@ -91,9 +100,37 @@ export function createSupabaseLeadStore(): LeadStore {
     },
 
     async setStatus(id, status) {
+      if (!UUID.test(id)) return false;
       const { data, error } = await db.from("leads").update({ status }).eq("id", id).select("id");
       if (error) throw new Error(`Updating lead failed: ${error.message}`);
       return data.length > 0;
+    },
+
+    async setNotes(id, notes) {
+      if (!UUID.test(id)) return false;
+      const { data, error } = await db.from("leads").update({ notes }).eq("id", id).select("id");
+      if (error) throw new Error(`Saving notes failed: ${error.message}`);
+      return data.length > 0;
+    },
+
+    async remove(id) {
+      if (!UUID.test(id)) return false;
+      const { data, error } = await db.from("leads").delete().eq("id", id).select("id");
+      if (error) throw new Error(`Deleting lead failed: ${error.message}`);
+      return data.length > 0;
+    },
+
+    async statRows() {
+      const { data, error } = await db
+        .from("leads")
+        .select("created_at, job_type, status")
+        .order("created_at", { ascending: false })
+        // Supabase's API caps a response at its "Max rows" setting (1,000 by default): plenty for
+        // a studio's enquiries, but raise it there if the dashboard ever needs more history.
+        .limit(10000)
+        .returns<Pick<LeadRow, "created_at" | "job_type" | "status">[]>();
+      if (error) throw new Error(`Loading lead stats failed: ${error.message}`);
+      return data.map((r) => ({ createdAt: r.created_at, jobType: r.job_type, status: r.status }));
     },
   };
 }

@@ -1,6 +1,6 @@
 # ETI Drone Visuals
 
-Marketing site and lead inbox for ETI Drone Visuals. Next.js (App Router) + Supabase + Resend.
+Marketing site and admin for ETI Drone Visuals. Next.js (App Router) + Supabase + Resend + Vercel Blob.
 Project context and design rules are in [CLAUDE.md](CLAUDE.md).
 
 ## Run it locally
@@ -9,18 +9,27 @@ Project context and design rules are in [CLAUDE.md](CLAUDE.md).
     npm run dev
 
 Open http://localhost:3000. With no environment variables set, the site runs in local mode:
-enquiries are saved to `.data/leads.json`, emails are printed in the terminal, and the lead inbox at
-http://localhost:3000/admin has no login.
+enquiries, flights and site details are files in `.data/`, uploads go to `public/media/uploads/`, emails are
+printed in the terminal, and the admin at http://localhost:3000/admin has no login.
+
+## The admin
+
+`/admin` has four sections: **Leads** (status, search, private notes, delete, CSV export), **Dashboard**
+(enquiries per week, what people ask for, win rate), **Work** (add, edit, reorder, hide and delete flights,
+upload stills and clips; each flight's case page follows) and **Site details** (founding year, contact details,
+profile links; anything left empty stays off the site). Every save updates the public pages straight away.
 
 ## Set up the backend
 
-1. **Supabase.** Create a project, then run `supabase/migrations/20260926000000_leads.sql` in the SQL editor
-   (or `supabase db push` with the CLI). Under Authentication, turn off sign-ups and add a user (email and
-   password) for each person who should see leads.
+1. **Supabase.** Create a project, then run the files in `supabase/migrations/` in the SQL editor, oldest first
+   (`…_leads.sql`, then `…_admin.sql`, which also seeds the twelve launch flights), or `supabase db push` with
+   the CLI. Under Authentication, turn off sign-ups and add a user (email and password) for each admin.
 2. **Resend.** Verify the sending domain (e.g. etidronevisuals.com) and create an API key.
-3. **Environment.** Copy `.env.example` to `.env.local` (and into your host's settings), and fill in the
+3. **Vercel Blob.** Create a Blob store and connect it to the project; that sets `BLOB_READ_WRITE_TOKEN`, which
+   admin uploads need. The twelve launch clips can live there too: point `NEXT_PUBLIC_CLIPS_BASE_URL` at them.
+4. **Environment.** Copy `.env.example` to `.env.local` (and into your host's settings), and fill in the
    Supabase keys, `ADMIN_EMAILS`, the Resend key and sender, and a random `LEAD_IP_SALT`.
-4. Optional: add Cloudflare Turnstile keys if the honeypot and rate limit stop being enough.
+5. Optional: add Cloudflare Turnstile keys if the honeypot and rate limit stop being enough.
 
 Then deploy (Vercel works as is). Sign in at `/admin/login`.
 
@@ -29,7 +38,7 @@ Then deploy (Vercel works as is). Sign in at `/admin/login`.
 Contact form → `submitEnquiry` server action → validation, honeypot, optional Turnstile, rate limit
 (5 per IP per hour, IPs stored only as salted hashes) → saved to `leads` with status `new` → the studio gets an
 email with Reply-To set to the client, and the client gets a short auto-reply. In `/admin`, change a lead's
-status to quoted, won or lost, and filter by status.
+status to quoted, won or lost, filter and search, add private notes, and export what you're looking at as CSV.
 
 ## Updating the footage
 

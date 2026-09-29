@@ -18,6 +18,7 @@ const lead: Lead = {
   message: '<img src=x onerror="alert(1)">\nsecond line',
   status: "new",
   source: "contact_form",
+  notes: "",
 };
 
 describe("studio notification", () => {

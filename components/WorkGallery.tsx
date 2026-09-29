@@ -6,13 +6,12 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { CATEGORIES, clipUrl, work, type Shot } from "@/lib/work";
+import { CATEGORIES, clipUrl, type Category, type Shot } from "@/lib/work";
 import { wipe } from "@/lib/motion/reveal";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-const FILTERS = ["All", ...CATEGORIES] as const;
-type Filter = (typeof FILTERS)[number];
+type Filter = "All" | Category;
 
 function useReducedMotion() {
   // Read it before the first paint: settling a frame later builds the wipes, then reverts them,
@@ -28,11 +27,14 @@ function useReducedMotion() {
   return reduce;
 }
 
-export function WorkGallery() {
+export function WorkGallery({ shots }: { shots: Shot[] }) {
   const [filter, setFilter] = useState<Filter>("All");
   const reduce = useReducedMotion();
   const list = useRef<HTMLUListElement>(null);
-  const shown = filter === "All" ? work : work.filter((s) => s.category === filter);
+  const shown = filter === "All" ? shots : shots.filter((s) => s.category === filter);
+  // Only categories that have a flight right now: hiding the last one in the admin shouldn't
+  // leave a filter that leads to an empty grid.
+  const filters: Filter[] = ["All", ...CATEGORIES.filter((c) => shots.some((s) => s.category === c))];
 
   // Rebuilt on every filter change: the cards that carried the old triggers are gone by then.
   useGSAP(
@@ -47,7 +49,7 @@ export function WorkGallery() {
   return (
     <>
       <div className="gal-filters" role="group" aria-label="Filter work by type">
-        {FILTERS.map((f) => (
+        {filters.map((f) => (
           <button
             key={f}
             type="button"
@@ -66,7 +68,7 @@ export function WorkGallery() {
 
       <ul className="gal" ref={list}>
         {shown.map((s) => (
-          <Card key={s.title} shot={s} reduce={reduce} />
+          <Card key={s.id} shot={s} reduce={reduce} />
         ))}
       </ul>
     </>

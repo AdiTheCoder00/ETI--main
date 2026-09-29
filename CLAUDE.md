@@ -12,7 +12,8 @@ Old site: https://yetiacro.flyercoal.in (Vite + React + three.js). The goal of t
 
 ## Current state
 Next.js 16 (App Router, TypeScript) port of the static prototype that was designed in a claude.ai chat, plus the
-enquiry backend and lead inbox. Stack: Next.js + Supabase (Postgres, and Auth for the admin) + Resend (email).
+enquiry backend and an admin (leads, dashboard, work gallery, site details). Stack: Next.js + Supabase (Postgres,
+and Auth for the admin) + Resend (email) + Vercel Blob (media uploaded from the admin).
 
 Site
 - **The homepage is statically prerendered, and must stay that way.** It takes no `searchParams`:
@@ -22,6 +23,11 @@ Site
   `"loading"` on every render — deciding it from the URL in the initialiser would make the client
   disagree with the prerendered HTML. Skipping the intro skips **only the loader**: Lenis, the
   reveals are still set up, or coming back from `/work` would hand over a dead page.
+- **`/`, `/work`, the case pages and the sitemap read flights and site details from the content store**
+  (`lib/content/`) and stay static anyway: `dynamic = "force-static"` plus `revalidate = 3600`. Every admin save
+  calls `refreshPublicPages()` (`lib/content/refresh.ts`), so edits go live on the next visit; the hourly
+  revalidate only catches edits made straight in the Supabase dashboard. The build must keep showing `○ /`,
+  `○ /work` and `● /work/[slug]`.
 - `app/page.tsx`: the one-page site, a server component. Copy and markup are unchanged from the prototype.
 - `components/SiteMotion.tsx`: everything the prototype's `main.js` did (loader, Lenis, GSAP scroll moments),
   in one `useGSAP` hook that works on the page DOM by id. `components/Nav.tsx` (menu) and
@@ -32,8 +38,19 @@ Site
   without it `/work` dropped to native scroll and read as a different site.
 - **three is pinned to 0.149.0** on purpose: later versions changed light units and removed PCFSoftShadowMap,
   which changes the loader's look. Only upgrade while comparing frames against the current render.
-- Stills live in `assets/work/` and go through `next/image`; `lib/work.ts` is the single source for all 12
-  flights and both places they appear. The hero clip is `public/media/hero.mp4` (5.8 MB, 1280×720 at 60 fps, re-encoded Sept 2026 from the old site's 720p source; the earlier 1100×618 copy looked soft); set
+- **Flights are edited at `/admin/work`** and stored in Supabase (`flights`) or, locally, `.data/flights.json`.
+  `lib/work.ts` holds only the types (`Flight` as stored, `Shot` as rendered), `CATEGORIES`, `clipUrl` and
+  `slugify`: the gallery and reel import it in the browser, so **no zod and no data there** (see
+  `lib/leads/constants.ts` for what that cost). The form schema is `lib/content/flight-schema.ts`; the twelve
+  launch flights are `lib/content/defaults.ts`, which the local store serves until the first edit and
+  `supabase/migrations/20260929000000_admin.sql` seeds into production. **Keep those two in step.**
+  Stills: a flight stores a bundled still by file name (`lib/stills.ts`, the imports in `assets/work/`, which
+  keep their blur placeholders and tuned sizes) or an uploaded one by URL, with the size and a 16px blur the
+  browser recorded at upload; `toShot()` (`lib/content/shots.ts`) turns either into what `next/image` takes,
+  and falls back to a one-pixel blur because the components ask for `placeholder="blur"`, which throws without
+  one. A still or clip must be a bundled name, a Blob URL under `/work/`, a local-mode upload or (clips only) a
+  clip-store file name: `isAllowedStill`/`isAllowedClip` enforce it, because any other image host makes
+  `next/image` throw and take the page down; `images.remotePatterns` in `next.config.ts` must match. The hero clip is `public/media/hero.mp4` (5.8 MB, 1280×720 at 60 fps, re-encoded Sept 2026 from the old site's 720p source; the earlier 1100×618 copy looked soft); set
   `NEXT_PUBLIC_HERO_VIDEO_URL` to move it to a CDN. Don't commit more large video: host it (Mux, Cloudflare
   Stream, Vercel Blob) and link it.
 - **The clips (Sept 2026).** The 12 clips that still existed on the old site were pulled into
@@ -61,12 +78,13 @@ Site
   would otherwise start (and download) clip after clip. Fades in on `playing`, not on hover, so a slow
   connection shows the still, not black. The preview video gets the same parallax as its still. Hover
   devices only, never under reduced motion; touch and keyboard reach the clip via the case page.
-- **Case pages** (`app/work/[slug]/page.tsx`, Sept 2026): one static page per flight, slugs from `lib/work.ts`
-  (keep them stable once live: they are what gets indexed). Clip (`components/CaseClip.tsx`: plays muted
+- **Case pages** (`app/work/[slug]/page.tsx`, Sept 2026): one static page per visible flight, slug set in the
+  admin (keep them stable once live: they are what gets indexed; the form warns on a change). Clip (`components/CaseClip.tsx`: plays muted
   while on screen, pauses off screen, never autoplays under reduced motion), location, type of work, kit,
   and note. There is no results section: the old site had none to carry over, so it was removed.
-  Title, description, canonical and share image come from the same fields. Unknown slugs 404
-  (`dynamicParams = false`). Every title on `/work` and the homepage reel links to its page (the whole card
+  Title, description, canonical and share image come from the same fields. The flights at build time are
+  prerendered; one added in the admin later renders on its first visit and is cached (`dynamicParams = true`,
+  so no redeploy). A slug with no visible flight 404s. The "next flight" link is left out when only one is left. Every title on `/work` and the homepage reel links to its page (the whole card
   is the link; the play button sits above it). `app/sitemap.ts`, `app/robots.ts`, `metadataBase` and the email inbox link all use `SITE_URL` from
   `lib/site.ts`: `NEXT_PUBLIC_SITE_URL`, else Vercel's production domain, else localhost.
 - **Map of flown places** on `/work` (`components/PlacesMap.tsx`, data in `lib/places.ts`, Sept 2026): the old
@@ -75,8 +93,12 @@ Site
   that name no place are listed under the map instead. The outline is `lib/map/india.ts`, generated by
   `scripts/india-outline.mjs` from Natural Earth's **India point-of-view** file, which draws India's official
   boundary (all of J&K and Ladakh), as a map published in India must. Never replace it with a default world
-  map. The list is the accessible interface; map markers are mouse-only mirrors. `tests/places.test.ts` keeps
-  the data in step with `lib/work.ts`.
+  map. The list is the accessible interface; map markers are mouse-only mirrors. The places themselves are not
+  in the admin: `resolvePlaces()` matches them against the live flights, drops a flight that is hidden or
+  deleted (it used to throw, which would take `/work` down) and a place left with nothing under it. A flight
+  added in the admin is off the map until someone places it in `lib/places.ts`; the "names no place" note is
+  the explicit `NO_PLACE` list, so a new flight isn't described as naming no place. `tests/places.test.ts`
+  keeps the data in step with the launch flights.
 - `components/PageScroll.tsx` reveals by attribute on loader-less pages: `data-lift` on a heading, `data-wipe`
   on a block. Reveal ends are `clamp()`ed to the scroll range (`lib/motion/reveal.ts`): without that, a
   heading near the foot of a page never reached its end marker and stayed half risen.
@@ -90,7 +112,9 @@ Site
   X-Frame-Options DENY, Permissions-Policy and HSTS on every response, and no X-Powered-By. The
   Content-Security-Policy is built in `lib/csp.ts`: public pages allow inline scripts (they are prerendered,
   so they can't carry a per-request nonce), `/admin` gets a per-request nonce with 'strict-dynamic' from
-  `proxy.ts`. A skip link in the root layout targets
+  `proxy.ts`. When a Blob store is connected, `img-src` and `media-src` allow **that store's** host, read from
+  `BLOB_READ_WRITE_TOKEN` at build (`blobStoreOrigin()`), not every public store; only the admin policy may
+  connect to the Blob upload API (`https://vercel.com`). A skip link in the root layout targets
   `id="main"`, so every page's `<main>` must carry that id. On the desktop reel, keyboard focus scrolls the
   page to the focused card (the browser can't: the reel only moves with vertical scroll). The contact action
   resolves the lead store lazily inside `handleEnquiry`'s error handling, so a store failure shows the form's
@@ -107,11 +131,34 @@ Enquiry backend (`lib/leads/`, `app/actions.ts`)
   send arbitrary text to other people's inboxes. Keep it that way.
 - Storage: `supabase/migrations/*_leads.sql`. RLS is on with no policies; the server uses the service-role key
   only after checking the admin. Raw IPs are never stored.
-- Lead inbox: `/admin` lists leads with a status (new, quoted, won, lost) and filters by status. Login is
-  Supabase email + password, limited to `ADMIN_EMAILS`. `proxy.ts` refreshes the session; every admin page and
-  server action checks again through `lib/auth.ts`.
-- Local mode: with no Supabase env vars and `NODE_ENV !== "production"`, leads go to `.data/leads.json`, `/admin`
-  has no login and emails print to the console. In production, missing Supabase config throws.
+- Storage for the admin: `supabase/migrations/*_admin.sql` adds `leads.notes`, `flights` and `site_settings`
+  (one row of JSON, validated by `settingsSchema` in `lib/settings.ts`), same RLS rule as leads.
+
+Admin (`app/admin/`)
+- Login is Supabase email + password, limited to `ADMIN_EMAILS`. `proxy.ts` refreshes the session; every admin
+  page, server action **and route handler** checks again through `lib/auth.ts` (route handlers are public
+  endpoints whatever the proxy does). `AdminHeader` is the shared header and section nav.
+- Leads (`/admin`): status, search (`?q=`, across name, email, job, where, message and notes), private notes,
+  delete, and CSV export (`/admin/export`, same filters). The search string goes inside a double-quoted
+  PostgREST value, so `normaliseQuery` strips `"`, `\` and `*`; don't loosen it. The CSV prefixes cells that
+  start with `= + - @` with an apostrophe (formula injection: every field was typed by a stranger).
+- Dashboard (`/admin/dashboard`): `summarise()` in `lib/leads/stats.ts`. Weeks start Monday 00:00 IST. Win rate
+  is won ÷ (won + lost). Charts are plain HTML/CSS in the site palette with CSS hover/focus tooltips and a table
+  view; bars cap at 24px.
+- Work (`/admin/work`): add, edit, reorder, hide, homepage on/off, delete. Uploads go straight from the browser
+  (`lib/uploads.ts` has the rules): to Vercel Blob with a short-lived token from `/admin/upload` when
+  `BLOB_READ_WRITE_TOKEN` is set; to `public/media/uploads/` (gitignored) in plain local mode; and are **refused**
+  when Supabase is configured without Blob, because a shared database must never point at one laptop's files.
+  Vercel caps function bodies at 4.5 MB, which is why nothing large goes through a server action.
+- Site details (`/admin/site`): founding year, public email, phone/WhatsApp, office, profile links. The year and
+  phone start **empty and hidden** (see "Facts not on the site"): the admin is where the owner adds a real one.
+  Profile links must be https on that network; empty ones are hidden (`components/Footer.tsx`).
+- Admin forms share `useAdminForm`: submit in a transition so errors keep what was typed, focus the first bad
+  field, and still post without JS. Destructive buttons use `ConfirmButton`.
+- Local mode: with no Supabase env vars and `NODE_ENV !== "production"`, leads, flights and settings are files in
+  `.data/`, `/admin` has no login and emails print to the console. In production, missing Supabase config throws
+  for anything behind the admin; the public pages fall back to the launch flights instead (`hasSupabase()`), so
+  a build never fails for want of a database.
 
 Checks: `npm run lint`, `npm run typecheck`, `npm test` (vitest, `tests/`), `npm run build`.
 
@@ -167,7 +214,9 @@ so the site states none: "since 2021" came out of the hero (unsourced, and the o
 Experience" contradicts it), and the case pages have no results section. The old site's phone numbers
 (98200 12345 etc.) looked fake and stay out, so the contact block no longer offers "call, or WhatsApp". Its stats
 row ("500+ Operations Completed", "8+ Yrs Flight Experience", "100% Safety Record") is the round-number counter the
-design rules ban. Add any of these back only with a real figure from the owner.
+design rules ban. Add any of these back only with a real figure from the owner. The founding year and a phone
+number are now settings at `/admin/site`, empty by default and shown only once filled in; keep it that way
+rather than seeding them with a guess.
 
 ## Next: planned work
 1. ~~Enquiry backend and lead inbox~~ (done).
@@ -175,7 +224,8 @@ design rules ban. Add any of these back only with a real figure from the owner.
 3. **Quote estimator.** Service + city + days gives a rough price range and creates a lead (reuse
    `handleEnquiry`/the lead store with `source: "quote_estimator"`). Pricing comes from the owner; never invent numbers.
 4. ~~Map of flown locations~~ (done, on `/work`).
-5. **Small wins.** WhatsApp chat button (needs a real number), client logos (with permission). Reel hover
+5. **Small wins.** WhatsApp chat button (needs a real number: once one is set at `/admin/site`, the contact
+   block already links to WhatsApp), client logos (with permission). Reel hover
    previews are done.
 
 The owner hasn't picked an order for 2 to 5, so ask before starting.

@@ -5,7 +5,12 @@ import { Nav } from "@/components/Nav";
 import { PageScroll } from "@/components/PageScroll";
 import { PlacesMap } from "@/components/PlacesMap";
 import { WorkGallery } from "@/components/WorkGallery";
+import { getPublishedShots, getSiteSettings } from "@/lib/content/public";
 import { baseOpenGraph, defaultShareImage } from "@/lib/site";
+
+// Static, regenerated when the admin saves and hourly as a backstop; see app/page.tsx.
+export const dynamic = "force-static";
+export const revalidate = 3600;
 
 const title = "Work — ETI Drone Visuals";
 const description =
@@ -18,7 +23,8 @@ export const metadata: Metadata = {
   openGraph: { ...baseOpenGraph, title, description, url: "/work", images: [defaultShareImage] },
 };
 
-export default function WorkPage() {
+export default async function WorkPage() {
+  const [shots, settings] = await Promise.all([getPublishedShots(), getSiteSettings()]);
   return (
     <>
       <PageScroll />
@@ -34,7 +40,7 @@ export default function WorkPage() {
           </p>
         </header>
 
-        <WorkGallery />
+        <WorkGallery shots={shots} />
 
         <section className="places" aria-labelledby="places-h">
           <div className="places-head">
@@ -43,7 +49,7 @@ export default function WorkPage() {
             </h2>
             <p data-wipe>Where the flights on this page were shot, and four jobs whose footage is no longer online.</p>
           </div>
-          <PlacesMap />
+          <PlacesMap shots={shots.map(({ slug, title }) => ({ slug, title }))} />
         </section>
 
         <div className="gal-ask">
@@ -55,7 +61,7 @@ export default function WorkPage() {
           </Link>
         </div>
 
-        <Footer />
+        <Footer settings={settings} />
       </main>
     </>
   );
